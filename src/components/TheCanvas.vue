@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { S } from '../core/state.js'
 import { ui } from '../core/ui.js'
-import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview } from '../core/canvas.js'
+import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoomCanvas } from '../core/canvas.js'
 import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '../core/tools.js'
 import { saveUndo } from '../core/history.js'
 
@@ -99,6 +99,17 @@ function onMouseleave() {
   drawHover(null, null)
 }
 
+// ホイールで拡大倍率を変更（上＝拡大 / 下＝縮小）
+function onWheel(e) {
+  zoomCanvas(e.deltaY < 0 ? 4 : -4)
+  // ズーム後もカーソル位置のホバー表示を更新（セルサイズが変わるため再計算）
+  const [x, y] = cellAt(e)
+  const inside = inB(x, y)
+  ui.hoverPos   = inside ? [x, y] : null
+  ui.hoverColor = inside ? (S.pixels[idx(x, y)] ?? null) : null
+  drawHover(inside ? x : null, inside ? y : null)
+}
+
 function onWindowMouseup(e) {
   if (!painting) return
 
@@ -143,6 +154,7 @@ onUnmounted(() => {
         @mousedown="onMousedown"
         @mousemove="onMousemove"
         @mouseleave="onMouseleave"
+        @wheel.prevent="onWheel"
         @contextmenu.prevent
       ></canvas>
     </div>

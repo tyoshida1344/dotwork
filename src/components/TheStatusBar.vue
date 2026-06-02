@@ -1,16 +1,11 @@
 <script setup>
 import { S } from '../core/state.js'
 import { ui } from '../core/ui.js'
-import { resize } from '../core/canvas.js'
+import { zoomCanvas } from '../core/canvas.js'
 
 const TOOL_NAMES = {
   pencil: 'ペン', eraser: '消しゴム', line: '直線',
   bucket: '塗りつぶし', picker: 'スポイト', dither: 'ディザ',
-}
-
-function zoom(delta) {
-  S.cell = Math.max(8, Math.min(32, S.cell + delta))
-  resize()
 }
 </script>
 
@@ -35,9 +30,9 @@ function zoom(delta) {
       <span style="color:var(--teal);margin-left:8px">R</span> {{ TOOL_NAMES[S.toolR] ?? S.toolR }}
     </span>
     <div class="zctrl">
-      <button @click="zoom(-4)">−</button>
+      <button @click="zoomCanvas(-4)">−</button>
       <span style="min-width:30px;text-align:center">{{ S.cell }}px</span>
-      <button @click="zoom(+4)">+</button>
+      <button @click="zoomCanvas(+4)">+</button>
     </div>
   </div>
 </template>

@@ -29,6 +29,25 @@ export function resetCanvas(n) {
   resize()
 }
 
+// 拡大倍率（セル1辺px）の離散レベル。8px 未満は縮小プレビュー域（グリッド線は隠す）。
+const ZOOM_LEVELS = [2, 4, 6, 8, 12, 16, 24, 32]
+
+// 拡大倍率を1段変える。delta の符号だけを見て隣のレベルへ移動し resize 込み。
+// ステータスバーの±ボタンとキャンバスのホイールから共用。
+export function zoomCanvas(delta) {
+  const dir = Math.sign(delta)
+  if (!dir) return
+  // 現在のセルサイズに最も近いレベルを起点にする
+  let i = 0
+  ZOOM_LEVELS.forEach((v, k) => {
+    if (Math.abs(v - S.cell) < Math.abs(ZOOM_LEVELS[i] - S.cell)) i = k
+  })
+  const next = ZOOM_LEVELS[Math.max(0, Math.min(ZOOM_LEVELS.length - 1, i + dir))]
+  if (next === S.cell) return
+  S.cell = next
+  resize()
+}
+
 export function drawBg() {
   const c = S.cell
   for (let y = 0; y < S.rows; y++) {
@@ -58,13 +77,15 @@ export function drawGrid() {
   const c = S.cell, cols = S.cols, rows = S.rows
   gX.clearRect(0, 0, _gridEl.width, _gridEl.height)
 
-  // グリッド線
-  gX.strokeStyle = 'rgba(255,255,255,0.07)'; gX.lineWidth = 1
-  for (let x = 0; x <= cols; x++) {
-    gX.beginPath(); gX.moveTo(x * c + .5, 0); gX.lineTo(x * c + .5, rows * c); gX.stroke()
-  }
-  for (let y = 0; y <= rows; y++) {
-    gX.beginPath(); gX.moveTo(0, y * c + .5); gX.lineTo(cols * c, y * c + .5); gX.stroke()
+  // グリッド線（小さい倍率では線が密すぎて縮小プレビューの邪魔になるため隠す）
+  if (c >= 8) {
+    gX.strokeStyle = 'rgba(255,255,255,0.07)'; gX.lineWidth = 1
+    for (let x = 0; x <= cols; x++) {
+      gX.beginPath(); gX.moveTo(x * c + .5, 0); gX.lineTo(x * c + .5, rows * c); gX.stroke()
+    }
+    for (let y = 0; y <= rows; y++) {
+      gX.beginPath(); gX.moveTo(0, y * c + .5); gX.lineTo(cols * c, y * c + .5); gX.stroke()
+    }
   }
 
   // 頭身ガイド（ティール）

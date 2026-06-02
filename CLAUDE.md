@@ -26,7 +26,7 @@ src/
   core/
     state.js       ← reactive(S)：アプリの唯一の状態
     palette.js     ← PAL定数、hexToHsl/hslToHex、generateLamp、extractPaletteFromImage、imageToPixels
-    canvas.js      ← initContexts、resize、resetCanvas、drawBg/drawPx/drawGrid
+    canvas.js      ← initContexts、resize、resetCanvas、zoomCanvas、drawBg/drawPx/drawGrid
     tools.js       ← idx、inB、setPx、bres、floodFill、applyDraw、autoOutline/removeOutline
     history.js     ← saveUndo、undo、redo、clearAll（描画呼び出しは含まない）
     export.js      ← exportPNG（16倍スケール・背景透過）
@@ -90,6 +90,7 @@ App.vue が「undo() 成功 → drawPx()」の順で呼ぶ。
 - **ディザ＋対称のパリティ修正**：ディザツールは元ピクセルの `(x+y)%2` のパリティを鏡像側にも使う。これにより中心軸をまたいで市松パターンがズレる問題を防ぐ。
 - **直線ツールのプレビュー**：`lineSnap`（ドラッグ開始時スナップショット）を毎フレーム `S.pixels` に復元してから再描画。確定は `window` の `mouseup`。終点がキャンバス外の場合は線を確定せず、`lineSnap` に戻して破棄する。
 - **watch の範囲**：`S.overlay`・`S.refImg`・`S.headUnits`・`S.vDivUnits` は `TheCanvas.vue` で watch して描画を更新する。ピクセル配列は deep watch せず、ツール関数から直接 `drawPx()` を呼ぶ。
+- **ズーム倍率**：`S.cell` は `zoomCanvas()` が `ZOOM_LEVELS`（`2,4,6,8,12,16,24,32` px）を1段ずつ移動する。`±` ボタンとキャンバスのホイールから共用。8px 未満は縮小プレビュー域で、`drawGrid()` が毎セルのグリッド線を隠す（補助線は残す）。
 
 ## テーマ・フォント
 
