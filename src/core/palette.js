@@ -53,14 +53,26 @@ export function hslToHex(h, s, l) {
   return '#' + toHex(r) + toHex(g) + toHex(b)
 }
 
+// 色相 h を target 方向へ最短経路で最大 amount 度だけ回す（行き過ぎない）
+function rotateHueToward(h, target, amount) {
+  const diff = ((target - h + 540) % 360) - 180   // 符号付き最短差 [-180, 180)
+  return h + Math.sign(diff) * Math.min(amount, Math.abs(diff))
+}
+
 export function generateLamp(hex) {
   const [h, s, l] = hexToHsl(hex)
+  // 影は寒色、ハイライトは暖色の極へ「最短方向に」寄せる。
+  // 寄せ幅は彩度でスケールするため、グレー調はほとんど色相が動かない。
+  const COOL = 250    // 青〜青紫（影が寄る極）
+  const WARM = 55     // 黄〜橙（光が寄る極）
+  const k = s / 100   // 彩度スケール（0=無彩色→シフト0、1=鮮やか→最大）
+
   return [
-    hslToHex(h - 22, s * 0.65, l * 0.38),
-    hslToHex(h - 10, s * 0.82, l * 0.62),
+    hslToHex(rotateHueToward(h, COOL, 16 * k), s * 0.85, l * 0.38),
+    hslToHex(rotateHueToward(h, COOL,  8 * k), s * 0.93, l * 0.62),
     hex,
-    hslToHex(h + 9,  Math.min(s, 80),       Math.min(l * 1.32, 86)),
-    hslToHex(h + 20, Math.min(s * 0.85, 68), Math.min(l * 1.58, 93)),
+    hslToHex(rotateHueToward(h, WARM,  8 * k), Math.min(s, 80),        Math.min(l * 1.32, 86)),
+    hslToHex(rotateHueToward(h, WARM, 16 * k), Math.min(s * 0.85, 68), Math.min(l * 1.58, 93)),
   ]
 }
 

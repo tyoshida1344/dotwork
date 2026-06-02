@@ -9,6 +9,9 @@ const TOOLS = [
   { id: 'picker', icon: '◎',  key: 'I', label: 'スポイト (I)' },
   { id: 'dither', icon: '▪',  key: 'D', label: 'ディザ (D)' },
 ]
+
+// 左クリックで左ボタンに、右クリックで右ボタンにツールを割り当てる
+const hint = '左クリック＝左ボタン / 右クリック＝右ボタンに割り当て'
 </script>
 
 <template>
@@ -17,11 +20,14 @@ const TOOLS = [
       v-for="t in TOOLS"
       :key="t.id"
       class="tbtn"
-      :class="{ on: S.tool === t.id }"
-      :title="t.label"
-      @click="S.tool = t.id"
+      :class="{ 'on-l': S.toolL === t.id, 'on-r': S.toolR === t.id }"
+      :title="`${t.label}\n${hint}`"
+      @click="S.toolL = t.id"
+      @contextmenu.prevent="S.toolR = t.id"
     >
       {{ t.icon }}<span class="tkey">{{ t.key }}</span>
+      <span v-if="S.toolL === t.id" class="tbadge tb-l">L</span>
+      <span v-if="S.toolR === t.id" class="tbadge tb-r">R</span>
     </div>
 
     <div class="tsep"></div>

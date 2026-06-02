@@ -50,12 +50,13 @@ export function getFillArea(x, y) {
   return result
 }
 
-// 1セルへのツール適用。drawPx() の呼び出しは呼び出し元が行う
-export function applyDraw(x, y) {
+// 1セルへのツール適用。使用ツールは引数で受け取る（左右ボタンで別ツールのため）。
+// drawPx() の呼び出しは呼び出し元が行う
+export function applyDraw(x, y, tool) {
   if (!inB(x, y)) return
-  if (S.tool === 'pencil') { setPx(x, y, S.color); return }
-  if (S.tool === 'eraser') { setPx(x, y, null);    return }
-  if (S.tool === 'dither') {
+  if (tool === 'pencil') { setPx(x, y, S.color); return }
+  if (tool === 'eraser') { setPx(x, y, null);    return }
+  if (tool === 'dither') {
     // 元ピクセルのパリティを鏡像側にも使うことで対称ディザのズレを防ぐ
     if ((x + y) % 2 === 0) {
       S.pixels[idx(x, y)] = S.color

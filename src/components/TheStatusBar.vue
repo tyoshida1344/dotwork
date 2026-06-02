@@ -30,7 +30,10 @@ function zoom(delta) {
         {{ ui.hoverColor ?? '透明' }}
       </span>
     </span>
-    <span>{{ TOOL_NAMES[S.tool] ?? S.tool }}</span>
+    <span style="min-width:170px">
+      <span style="color:var(--amber)">L</span> {{ TOOL_NAMES[S.toolL] ?? S.toolL }}
+      <span style="color:var(--teal);margin-left:8px">R</span> {{ TOOL_NAMES[S.toolR] ?? S.toolR }}
+    </span>
     <div class="zctrl">
       <button @click="zoom(-4)">−</button>
       <span style="min-width:30px;text-align:center">{{ S.cell }}px</span>

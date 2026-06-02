@@ -115,7 +115,9 @@ button:hover { border-color: var(--amber); color: var(--amber); }
   transition: border-color .1s;
 }
 .tbtn:hover  { border-color: var(--amber); }
-.tbtn.on     { border-color: var(--amber); background: #33281a; }
+.tbtn.on-l   { border-color: var(--amber); background: #33281a; }   /* 左ボタン割当 */
+.tbtn.on-r   { border-color: var(--teal); }                         /* 右ボタン割当 */
+.tbtn.on-l.on-r { border-color: var(--amber); }                     /* 両方なら左枠優先（右はバッジで表示）*/
 .tbtn.sym-on { border-color: var(--teal);  background: #162020; }
 .tkey {
   position: absolute;
@@ -124,6 +126,18 @@ button:hover { border-color: var(--amber); color: var(--amber); }
   color: var(--muted);
   line-height: 1;
 }
+.tbadge {
+  position: absolute;
+  top: 2px;
+  font-size: 9px;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 2px;
+  color: var(--bg);
+  font-weight: bold;
+}
+.tb-l { left: 3px;  background: var(--amber); }
+.tb-r { right: 3px; background: var(--teal); }
 .tsep { width: 30px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
 
 /* ── キャンバスエリア ─────────────────────── */
@@ -175,7 +189,7 @@ button:hover { border-color: var(--amber); color: var(--amber); }
 }
 
 /* ツールチップ */
-.tip-wrap { position: relative; line-height: 1; }
+.tip-wrap { position: relative; line-height: 1; margin-left: auto; }
 .tip-ico { color: var(--muted); cursor: default; font-size: 13px; }
 .tip-ico:hover { color: var(--amber); }
 .tip-box {

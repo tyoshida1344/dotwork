@@ -8,7 +8,8 @@ export const S = reactive({
   rows: SIZE,
   cell: 16,
   pixels: new Array(SIZE * SIZE).fill(null),
-  tool: 'pencil',
+  toolL: 'pencil',   // 左クリックで使うツール
+  toolR: 'picker',   // 右クリックで使うツール
   color: '#f0a030',
   sym: false,
   palette: [...PAL.pico8],

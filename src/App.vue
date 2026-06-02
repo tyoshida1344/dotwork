@@ -22,7 +22,7 @@ function onKeydown(e) {
     return
   }
   const k = e.key.toUpperCase()
-  if (TOOL_KEYS[k]) S.tool = TOOL_KEYS[k]
+  if (TOOL_KEYS[k]) S.toolL = TOOL_KEYS[k]   // キーは左ボタンのツールを切替
   if (k === 'S') S.sym = !S.sym
 }
 

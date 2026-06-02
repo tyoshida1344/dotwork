@@ -12,10 +12,11 @@ const gridcvEl = ref(null)
 const cwrapEl  = ref(null)
 
 // ドラッグ中の一時状態（アンドゥ履歴・reactive S には含めない）
-let painting  = false
-let lastCell  = null
-let lineStart = null
-let lineSnap  = null   // 直線ドラッグ開始時のスナップショット
+let painting   = false
+let strokeTool = null  // このストロークで使うツール（押したボタンで決まる）
+let lastCell   = null
+let lineStart  = null
+let lineSnap   = null   // 直線ドラッグ開始時のスナップショット
 
 function cellAt(e) {
   const r = gridcvEl.value.getBoundingClientRect()
@@ -26,25 +27,29 @@ function cellAt(e) {
 }
 
 function onMousedown(e) {
-  if (e.button !== 0) return
+  // 左(0)＝toolL、右(2)＝toolR。それ以外と多重押しは無視
+  if (e.button !== 0 && e.button !== 2) return
+  if (painting) return
+  const tool = e.button === 2 ? S.toolR : S.toolL
+  strokeTool = tool
   painting = true
   const [x, y] = cellAt(e)
 
-  if (S.tool === 'picker') {
+  if (tool === 'picker') {
     const c = S.pixels[idx(x, y)]
     if (c) S.color = c
     painting = false; return
   }
-  if (S.tool === 'bucket') {
+  if (tool === 'bucket') {
     saveUndo(); floodFill(x, y, S.color); drawPx()
     painting = false; return
   }
-  if (S.tool === 'line') {
+  if (tool === 'line') {
     lineStart = [x, y]; lineSnap = [...S.pixels]; return
   }
 
   saveUndo()
-  applyDraw(x, y)
+  applyDraw(x, y, tool)
   lastCell = [x, y]
   drawPx()
 }
@@ -56,7 +61,8 @@ function onMousemove(e) {
   if (!painting) {
     ui.hoverPos   = inside ? [x, y] : null
     ui.hoverColor = inside ? (S.pixels[idx(x, y)] ?? null) : null
-    if (S.tool === 'bucket' && inside) {
+    // ホバー時のプレビューは左ボタン（主操作）のツールを基準にする
+    if (S.toolL === 'bucket' && inside) {
       drawFillPreview(getFillArea(x, y), x, y)
     } else {
       drawHover(inside ? x : null, inside ? y : null)
@@ -64,7 +70,7 @@ function onMousemove(e) {
     return
   }
 
-  if (S.tool === 'line' && lineStart) {
+  if (strokeTool === 'line' && lineStart) {
     S.pixels = [...lineSnap]
     bres(lineStart[0], lineStart[1], x, y).forEach(([px, py]) => setPx(px, py, S.color))
     drawPx()
@@ -72,10 +78,10 @@ function onMousemove(e) {
     if (lastCell) {
       const [lx, ly] = lastCell
       if (lx !== x || ly !== y) {
-        bres(lx, ly, x, y).slice(1).forEach(([px, py]) => applyDraw(px, py))
+        bres(lx, ly, x, y).slice(1).forEach(([px, py]) => applyDraw(px, py, strokeTool))
       }
     } else {
-      applyDraw(x, y)
+      applyDraw(x, y, strokeTool)
     }
     lastCell = [x, y]
     drawPx()
@@ -96,7 +102,7 @@ function onMouseleave() {
 function onWindowMouseup(e) {
   if (!painting) return
 
-  if (S.tool === 'line' && lineStart) {
+  if (strokeTool === 'line' && lineStart) {
     const [x, y] = cellAt(e)
     S.pixels = [...lineSnap]
     // 終点がキャンバス外なら線は確定せず、スナップショットに戻して破棄する
@@ -108,7 +114,7 @@ function onWindowMouseup(e) {
     drawPx()
   }
 
-  painting = false; lastCell = null
+  painting = false; lastCell = null; strokeTool = null
 }
 
 // canvas の見た目に影響する状態を watch
@@ -137,6 +143,7 @@ onUnmounted(() => {
         @mousedown="onMousedown"
         @mousemove="onMousemove"
         @mouseleave="onMouseleave"
+        @contextmenu.prevent
       ></canvas>
     </div>
   </div>

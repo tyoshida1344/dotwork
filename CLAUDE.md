@@ -70,13 +70,18 @@ src/
 
 ```
 マウスダウン（TheCanvas.vue）
-  └─ saveUndo()          ← ストローク開始前に1回だけ保存
-  └─ applyDraw(x, y)     ← 現在のツールを1セルに適用
-  └─ drawPx()            ← 呼び出し元（TheCanvas.vue）が担う
+  └─ tool = button===2 ? S.toolR : S.toolL  ← 押したボタンでツール決定
+  └─ saveUndo()             ← ストローク開始前に1回だけ保存
+  └─ applyDraw(x, y, tool)  ← 指定ツールを1セルに適用
+  └─ drawPx()               ← 呼び出し元（TheCanvas.vue）が担う
 
 history.js の undo/redo は S.pixels のみ操作し、描画は呼び出さない。
 App.vue が「undo() 成功 → drawPx()」の順で呼ぶ。
 ```
+
+### 左右クリックのツール（toolL / toolR）
+
+ツールは `S.toolL`（左ボタン）と `S.toolR`（右ボタン）の2枠を持つ。ツールバーは左クリックで `toolL`、右クリック（`contextmenu`）で `toolR` を割り当て、L/R バッジで表示する。キャンバスはマウスダウン時に押したボタンで使用ツールを決め、ストローク中は `strokeTool`（TheCanvas のモジュール変数）に保持する。キーボードショートカット（B/E/L…）は `toolL` を切り替える。右クリックのコンテキストメニューはキャンバスとツールボタンで抑制している。
 
 ### 注意点
 
