@@ -25,12 +25,12 @@ src/
   style.css        ← グローバルスタイル（CSS 変数・全コンポーネント共通）
   core/
     state.js       ← reactive(S)：アプリの唯一の状態
-    palette.js     ← PAL定数、hexToHsl/hslToHex、generateLamp、extractPaletteFromImage
+    palette.js     ← PAL定数、hexToHsl/hslToHex、generateLamp、extractPaletteFromImage、imageToPixels
     canvas.js      ← initContexts、resize、resetCanvas、drawBg/drawPx/drawGrid
     tools.js       ← idx、inB、setPx、bres、floodFill、applyDraw、autoOutline/removeOutline
     history.js     ← saveUndo、undo、redo、clearAll（描画呼び出しは含まない）
     export.js      ← exportPNG（16倍スケール・背景透過）
-    ui.js          ← reactive({hoverPos, guidePageOpen})：UI固有の揮発性状態
+    ui.js          ← reactive({hoverPos, guidePageOpen, cropOpen})：UI固有の揮発性状態
   components/
     TheHeader.vue      ← ロゴ、サイズ選択、アクション群
     TheToolbar.vue     ← ツールボタン縦並び＋対称トグル
@@ -39,12 +39,13 @@ src/
     TheStatusBar.vue   ← カーソル位置、ツール名、ズーム操作
     SidePanel.vue      ← 再利用可能なサイドバーセクション（title + tooltip + slot）
     GuidePage.vue      ← 全画面ガイドオーバーレイ（v-html + IntersectionObserver）
+    ImageImportModal.vue ← 画像→ドット変換のクロップオーバーレイ（比率固定の枠を移動／リサイズ）
     panels/
       ColorPanel.vue     ← 現在色 + シャドウランプ（まとめてひとつのコンポーネント）
       PalettePanel.vue   ← パレット選択 + スウォッチグリッド
       EnhancePanel.vue   ← Auto Outline / Remove Outline
       GuidesPanel.vue    ← 頭身スライダー、中心線、カスタム補助線
-      RefImagePanel.vue  ← 参照画像（ドロップゾーン・オーバーレイ・パレット抽出）
+      RefImagePanel.vue  ← 参照画像（ドロップゾーン・オーバーレイ・パレット抽出・ドット変換）
 ```
 
 ## アーキテクチャ
@@ -53,7 +54,7 @@ src/
 
 `S = reactive({...})` がアプリ唯一の状態ソース。Vue の Proxy ベース reactivity で動作するため、`S.pixels[i] = color` 等のインデックス代入もトラッキングされる。ただしピクセル配列の変更を watch することはパフォーマンス上避けており、代わりにツール関数が直接 `drawPx()` を呼ぶ。
 
-`ui.js` は `hoverPos`（カーソル位置）と `guidePageOpen`（ガイドページ表示）だけを持つ。これらはアンドゥ履歴に含める必要がないため `S` から分離してある。
+`ui.js` は `hoverPos`（カーソル位置）・`guidePageOpen`（ガイドページ表示）・`cropOpen`（画像→ドット変換のクロップ表示）など、アンドゥ履歴に含める必要のない揮発性状態を持つ。これらは `S` から分離してある。
 
 ### 3層キャンバス（canvas.js）
 

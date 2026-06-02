@@ -100,3 +100,28 @@ export function extractPaletteFromImage(img) {
   while (palette.length < 16) palette.push('#000000')
   return palette
 }
+
+// 画像の指定矩形（srcRect, 画像ピクセル座標）を cols×rows へ縮小サンプリングし、
+// 各セルの色（hex）または透明（null）を並べたフラット配列を返す。
+// 色はパレットに寄せず、縮小後の実際の色をそのまま使う。
+export function imageToPixels(img, srcRect, cols, rows, alphaThreshold = 128) {
+  const tmp = document.createElement('canvas')
+  tmp.width = cols
+  tmp.height = rows
+  const tx = tmp.getContext('2d')
+  // 縮小時に平均化して代表色を得る
+  tx.imageSmoothingEnabled = true
+  tx.imageSmoothingQuality = 'high'
+  tx.drawImage(img, srcRect.x, srcRect.y, srcRect.w, srcRect.h, 0, 0, cols, rows)
+  const data = tx.getImageData(0, 0, cols, rows).data
+
+  const pixels = new Array(cols * rows).fill(null)
+  for (let i = 0; i < cols * rows; i++) {
+    if (data[i * 4 + 3] < alphaThreshold) continue   // 半透明以下は透明扱い
+    const r = data[i * 4]
+    const g = data[i * 4 + 1]
+    const b = data[i * 4 + 2]
+    pixels[i] = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+  }
+  return pixels
+}

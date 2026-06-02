@@ -5,5 +5,6 @@ export const ui = reactive({
   hoverPos:   null,    // [x, y] | null
   hoverColor: null,    // hex | null（ホバー中のマスの色。透明なら null）
   guidePageOpen: false,
+  cropOpen: false,     // 画像→ドット変換のクロップオーバーレイ表示
   palKey: 'pico8',     // パレットドロップダウンの選択値
 })

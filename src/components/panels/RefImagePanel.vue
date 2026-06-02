@@ -38,6 +38,10 @@ function onExtract() {
   S.palette = extractPaletteFromImage(S.refImg)
   ui.palKey = 'ref'
 }
+function onConvert() {
+  if (!S.refImg) { alert('先に参照画像を読み込んでください。'); return }
+  ui.cropOpen = true
+}
 function clearRef() {
   S.refImg = null
   previewSrc.value = ''
@@ -46,7 +50,7 @@ function clearRef() {
 </script>
 
 <template>
-  <SidePanel title="REFERENCE" tooltip="参照画像を読み込んでトレースやパレット抽出に使用。オーバーレイ不透明度を調整して下絵として表示できます。">
+  <SidePanel title="REFERENCE" tooltip="参照画像を読み込んでトレースやパレット抽出、ドットへの直接変換に使用。オーバーレイ不透明度を調整して下絵として表示できます。">
     <img
       v-if="previewSrc"
       class="ref-prev"
@@ -74,7 +78,8 @@ function clearRef() {
       >
       <span class="sval">{{ Math.round(S.overlay * 100) }}%</span>
     </div>
-    <button class="abtn" style="margin-top:5px" @click="onExtract">⬦ パレット抽出</button>
+    <button class="abtn btn-a" style="margin-top:5px" @click="onConvert">▦ ドットに変換</button>
+    <button class="abtn" @click="onExtract">⬦ パレット抽出</button>
     <button class="abtn" style="color:var(--muted)" @click="clearRef">✕ 参照画像を消去</button>
   </SidePanel>
 </template>
