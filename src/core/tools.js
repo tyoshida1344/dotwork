@@ -28,18 +28,8 @@ export function bres(x0, y0, x1, y1) {
 }
 
 export function floodFill(x, y, newCol) {
-  const target = S.pixels[idx(x, y)]
-  if (target === newCol) return
-  const stack = [[x, y]], seen = new Uint8Array(S.cols * S.rows)
-  while (stack.length) {
-    const [cx, cy] = stack.pop()
-    if (!inB(cx, cy)) continue
-    const i = idx(cx, cy)
-    if (seen[i] || S.pixels[i] !== target) continue
-    seen[i] = 1
-    S.pixels[i] = newCol
-    stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1])
-  }
+  if (S.pixels[idx(x, y)] === newCol) return
+  for (const i of getFillArea(x, y)) S.pixels[i] = newCol
 }
 
 // 塗りつぶし対象のフラットインデックス一覧を返す（pixels は変更しない）

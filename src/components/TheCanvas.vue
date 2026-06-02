@@ -99,6 +99,7 @@ function onWindowMouseup(e) {
   if (S.tool === 'line' && lineStart) {
     const [x, y] = cellAt(e)
     S.pixels = [...lineSnap]
+    // 終点がキャンバス外なら線は確定せず、スナップショットに戻して破棄する
     if (inB(x, y)) {
       saveUndo()
       bres(lineStart[0], lineStart[1], x, y).forEach(([px, py]) => setPx(px, py, S.color))

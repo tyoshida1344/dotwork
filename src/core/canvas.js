@@ -1,4 +1,5 @@
 import { S } from './state.js'
+import { clearHistory } from './history.js'
 
 let bgX, pxX, gX, _bgEl, _cvEl, _gridEl, _wrapEl
 
@@ -23,7 +24,7 @@ export function resize() {
 export function resetCanvas(n) {
   S.cols = S.rows = n
   S.pixels = new Array(n * n).fill(null)
-  S.undo = []; S.redo = []
+  clearHistory()
   resize()
 }
 

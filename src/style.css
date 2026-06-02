@@ -205,15 +205,6 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 /* 広幅ボタン */
 .abtn { width: 100%; padding: 7px 0; font-size: 14px; margin-bottom: 4px; }
 
-/* トグルボタン */
-.tgl {
-  padding: 3px 9px; font-size: 13px;
-  border: 1px solid var(--border); color: var(--muted);
-  border-radius: 3px; cursor: pointer; background: var(--bg3);
-}
-.tgl:hover { border-color: var(--teal); color: var(--teal); }
-.tgl.on    { border-color: var(--teal); color: var(--teal); background: #162020; }
-
 /* ── ステータスバー ───────────────────────── */
 #status {
   grid-area: stat;
@@ -343,14 +334,6 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 }
 .psw:hover { border-color: var(--amber); }
 .psw.sel   { border-color: #fff; }
-
-/* 補助線凡例 */
-.gleg { display: flex; gap: 10px; margin-bottom: 7px; font-size: 13px; color: var(--muted); }
-.gdot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
-
-/* ガイド追加行 */
-.grow { display: flex; gap: 4px; margin: 5px 0; }
-.grow select { flex: 1; }
 
 /* 色セクション */
 .col-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
