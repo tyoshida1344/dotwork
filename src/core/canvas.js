@@ -59,7 +59,7 @@ export function drawBg() {
   const c = S.cell
   for (let y = 0; y < S.rows; y++) {
     for (let x = 0; x < S.cols; x++) {
-      bgX.fillStyle = (x + y) % 2 === 0 ? '#2e2e2e' : '#1e1e1e'
+      bgX.fillStyle = (x + y) % 2 === 0 ? '#dfe2e7' : '#f1f2f5'
       bgX.fillRect(x * c, y * c, c, c)
     }
   }
@@ -86,7 +86,7 @@ export function drawGrid() {
 
   // グリッド線（小さい倍率では線が密すぎて縮小プレビューの邪魔になるため隠す）
   if (c >= 8) {
-    gX.strokeStyle = 'rgba(255,255,255,0.07)'; gX.lineWidth = 1
+    gX.strokeStyle = 'rgba(0,0,0,0.10)'; gX.lineWidth = 1
     for (let x = 0; x <= cols; x++) {
       gX.beginPath(); gX.moveTo(x * c + .5, 0); gX.lineTo(x * c + .5, rows * c); gX.stroke()
     }
@@ -97,8 +97,8 @@ export function drawGrid() {
 
   // 頭身ガイド（ティール）
   if (S.headUnits > 0) {
-    gX.strokeStyle = '#30c0a0'; gX.lineWidth = 1
-    gX.font = '8px DM Mono, monospace'; gX.fillStyle = '#30c0a0'
+    gX.strokeStyle = '#0d9488'; gX.lineWidth = 1
+    gX.font = '8px DM Mono, monospace'; gX.fillStyle = '#0d9488'
     for (let i = 1; i < S.headUnits; i++) {
       const py = Math.round(rows * i / S.headUnits) * c + .5
       gX.beginPath(); gX.moveTo(0, py); gX.lineTo(cols * c, py); gX.stroke()
@@ -124,11 +124,11 @@ export function drawHover(x, y) {
   drawGrid()
   if (x == null || y == null) return
   const c = S.cell
-  // 薄い白オーバーレイ
-  gX.fillStyle = 'rgba(255,255,255,0.13)'
+  // 薄い暗色オーバーレイ
+  gX.fillStyle = 'rgba(0,0,0,0.07)'
   gX.fillRect(x * c, y * c, c, c)
-  // 白枠（1px 内側）
-  gX.strokeStyle = 'rgba(255,255,255,0.9)'
+  // 暗色枠（1px 内側）
+  gX.strokeStyle = 'rgba(0,0,0,0.5)'
   gX.lineWidth = 1
   gX.strokeRect(x * c + 0.5, y * c + 0.5, c - 1, c - 1)
 }
@@ -158,9 +158,9 @@ export function drawFillPreview(indices, hx, hy) {
     if (x === S.cols - 1 || !inArea[i + 1])      { gX.beginPath(); gX.moveTo((x+1)*c, y*c); gX.lineTo((x+1)*c, (y+1)*c); gX.stroke() }
   }
 
-  // カーソル位置の白枠
+  // カーソル位置の枠
   if (hx != null && hy != null) {
-    gX.strokeStyle = 'rgba(255,255,255,0.9)'
+    gX.strokeStyle = 'rgba(0,0,0,0.5)'
     gX.lineWidth = 1
     gX.strokeRect(hx * c + 0.5, hy * c + 0.5, c - 1, c - 1)
   }
