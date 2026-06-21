@@ -1,15 +1,19 @@
 /* ── CSS 変数 ─────────────────────────────── */
+/* 白基調テーマ。面は白／薄グレー、アクセントはブランドのアンバー＋ティールを維持。 */
 :root {
-  --bg:      #1a1510;
-  --bg2:     #221d17;
-  --bg3:     #2d261e;
-  --border:  #3d3428;
-  --text:    #d4b896;
-  --muted:   #7a6a55;
-  --amber:   #f0a030;
-  --amber2:  #b87820;
-  --teal:    #30a0a0;
-  --teal2:   #207070;
+  --bg:        #f3f4f6;   /* アプリ／キャンバス領域のベース（gray-100） */
+  --bg2:       #ffffff;   /* パネル面：ヘッダー・ツールバー・サイドバー・ステータス */
+  --bg3:       #f9fafb;   /* ボタン・入力の面（gray-50） */
+  --border:    #e5e7eb;   /* 境界線（gray-200） */
+  --text:      #374151;   /* 本文（gray-700） */
+  --muted:     #6b7280;   /* 補助テキスト（gray-500） */
+  --amber:     #e08a1e;   /* 主アクセント（鮮やかなアンバー） */
+  --amber2:    #c2761a;   /* 濃いアンバー（ボーダー用） */
+  --amber-soft:#fcf1e0;   /* アクティブ塗り用の淡いアンバー */
+  --teal:      #0d9488;   /* 副次アクセント（teal-600） */
+  --teal2:     #0f766e;   /* 濃いティール（teal-700） */
+  --teal-soft: #e3f4f1;   /* 淡いティール */
+  --on-accent: #ffffff;   /* アクセント塗りボタン上の文字色 */
   --sidebar: 280px;
   --toolbar: 56px;
   --hdr:     58px;
@@ -64,11 +68,11 @@ select:focus, button:focus { outline: 1px solid var(--amber); outline-offset: 1p
 button:hover { border-color: var(--amber); color: var(--amber); }
 
 .btn-a { border-color: var(--amber2); color: var(--amber); }
-.btn-a:hover { background: var(--amber); color: var(--bg); }
+.btn-a:hover { background: var(--amber); color: var(--on-accent); }
 .btn-t { border-color: var(--teal2); color: var(--teal); }
-.btn-t:hover { background: var(--teal); color: var(--bg); }
-.btn-r { border-color: #703030; color: #d07070; }
-.btn-r:hover { background: #d04040; color: #fff; border-color: #d04040; }
+.btn-t:hover { background: var(--teal); color: var(--on-accent); }
+.btn-r { border-color: #fca5a5; color: #dc2626; }
+.btn-r:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
 
 /* ── ヘッダー ─────────────────────────────── */
 #hdr {
@@ -122,10 +126,10 @@ button:hover { border-color: var(--amber); color: var(--amber); }
   transition: border-color .1s;
 }
 .tbtn:hover  { border-color: var(--amber); }
-.tbtn.on-l   { border-color: var(--amber); background: #33281a; }   /* 左ボタン割当 */
-.tbtn.on-r   { border-color: var(--teal); }                         /* 右ボタン割当 */
-.tbtn.on-l.on-r { border-color: var(--amber); }                     /* 両方なら左枠優先（右はバッジで表示）*/
-.tbtn.sym-on { border-color: var(--teal);  background: #162020; }
+.tbtn.on-l   { border-color: var(--amber); background: var(--amber-soft); }   /* 左ボタン割当 */
+.tbtn.on-r   { border-color: var(--teal); }                                  /* 右ボタン割当 */
+.tbtn.on-l.on-r { border-color: var(--amber); }                              /* 両方なら左枠優先（右はバッジで表示）*/
+.tbtn.sym-on { border-color: var(--teal);  background: var(--teal-soft); }
 .tkey {
   position: absolute;
   bottom: 2px; right: 4px;
@@ -140,7 +144,7 @@ button:hover { border-color: var(--amber); color: var(--amber); }
   line-height: 1;
   padding: 1px 3px;
   border-radius: 2px;
-  color: var(--bg);
+  color: var(--on-accent);
   font-weight: bold;
 }
 .tb-l { left: 3px;  background: var(--amber); }
@@ -155,7 +159,7 @@ button:hover { border-color: var(--amber); color: var(--amber); }
   justify-content: center;
   overflow: hidden;
   background:
-    repeating-linear-gradient(45deg,#1e1a14 0,#1e1a14 10px,#1a1510 10px,#1a1510 20px);
+    repeating-linear-gradient(45deg,#eceef1 0,#eceef1 10px,#f3f4f6 10px,#f3f4f6 20px);
 }
 #cwrap {
   position: relative;
@@ -275,7 +279,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   transition: color .1s, border-color .1s;
 }
 .gnav-link:hover { color: var(--text); }
-.gnav-link.active { color: var(--amber); border-left-color: var(--amber); background: #221d17; }
+.gnav-link.active { color: var(--amber); border-left-color: var(--amber); background: var(--amber-soft); }
 #gcontent {
   flex: 1;
   overflow-y: auto;
@@ -308,9 +312,9 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 #gcontent .exrow { display: flex; gap: 20px; flex-wrap: wrap; margin: 4px 0 14px; }
 #gcontent .ex { margin: 0; }
 #gcontent .extag { font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 1px; margin-bottom: 5px; }
-#gcontent .ex.ok .extag { color: #5fc070; }
+#gcontent .ex.ok .extag { color: #16a34a; }
 #gcontent .ex.ng .extag { color: #f06080; }
-#gcontent .exsvg { display: block; border: 1px solid var(--border); background: #14100b; }
+#gcontent .exsvg { display: block; border: 1px solid var(--border); background: var(--bg); }
 #gcontent figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; max-width: 160px; line-height: 1.5; }
 
 #gclose { position: absolute; top: 12px; right: 16px; padding: 5px 14px; }
@@ -349,7 +353,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   overflow: hidden;
   align-self: center;
   line-height: 0;
-  background: #111;
+  background: var(--bg);
   touch-action: none;
 }
 .cropstage img {
@@ -385,7 +389,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   border: 1px solid var(--border);
   border-radius: 3px;
   margin-bottom: 7px;
-  background: #111;
+  background: var(--bg);
   display: block;
 }
 .ref-drop {
@@ -412,9 +416,9 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   overflow: hidden;
 }
 .bg-sw:hover { border-color: var(--amber); }
-.bg-sw.sel   { border-color: #fff; }
+.bg-sw.sel   { border-color: var(--bg2); box-shadow: 0 0 0 2px var(--amber); }
 .bg-checker {
-  background: repeating-conic-gradient(#3a3a3a 0% 25%, #1e1e1e 0% 50%) 0 / 10px 10px;
+  background: repeating-conic-gradient(#cdd1d6 0% 25%, #f3f4f6 0% 50%) 0 / 10px 10px;
 }
 .bg-custom {
   display: flex; align-items: center; justify-content: center;
@@ -450,7 +454,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   cursor: pointer;
 }
 .psw:hover { border-color: var(--amber); }
-.psw.sel   { border-color: #fff; }
+.psw.sel   { border-color: var(--bg2); box-shadow: 0 0 0 2px var(--amber); }
 
 /* 色セクション */
 .col-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
@@ -556,7 +560,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
     transform: translateX(100%);
     transition: transform .2s ease;
     z-index: 260;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
   }
   #side.side-open { transform: translateX(0); }
 

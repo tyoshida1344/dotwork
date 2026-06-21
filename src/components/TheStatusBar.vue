@@ -19,7 +19,7 @@ const TOOL_NAMES = {
         style="width:14px;height:14px;border-radius:2px;border:1px solid var(--border);flex-shrink:0"
         :style="ui.hoverColor
           ? { background: ui.hoverColor }
-          : { background: 'repeating-linear-gradient(45deg,#444 0,#444 3px,#222 3px,#222 6px)' }"
+          : { background: 'repeating-linear-gradient(45deg,#c8ccd2 0,#c8ccd2 3px,#eceef1 3px,#eceef1 6px)' }"
       ></span>
       <span :style="{ color: ui.hoverColor ? 'var(--text)' : 'var(--muted)' }">
         {{ ui.hoverColor ?? '透明' }}
