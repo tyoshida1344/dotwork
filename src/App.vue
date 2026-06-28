@@ -11,6 +11,7 @@ import TheSidebar   from './components/TheSidebar.vue'
 import TheStatusBar from './components/TheStatusBar.vue'
 import GuidePage    from './components/GuidePage.vue'
 import ImageImportModal from './components/ImageImportModal.vue'
+import LessonPage    from './components/LessonPage.vue'
 
 const TOOL_KEYS = { B:'pencil', E:'eraser', L:'line', G:'bucket', I:'picker', D:'dither' }
 
@@ -45,5 +46,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
     <TheStatusBar />
     <GuidePage />
     <ImageImportModal />
+    <LessonPage />
   </div>
 </template>

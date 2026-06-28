@@ -2,6 +2,7 @@
 import { S } from '../../core/state.js'
 import { ui } from '../../core/ui.js'
 import { PAL, extractPaletteFromImage } from '../../core/palette.js'
+import { lessonState } from '../../core/lessons.js'
 import SidePanel from '../SidePanel.vue'
 
 function onPalChange(e) {
@@ -19,7 +20,14 @@ function onPalChange(e) {
 <template>
   <SidePanel title="PALETTE" tooltip="アクティブなカラーセット。ヘッダーのドロップダウンで変更。クリックで選択。">
     <div style="margin-bottom:6px">
-      <select style="width:100%" :value="ui.palKey" @change="onPalChange">
+      <select
+        style="width:100%"
+        :value="ui.palKey"
+        :disabled="!!lessonState.active"
+        :title="lessonState.active ? 'レッスン中は色セットが固定されます' : ''"
+        @change="onPalChange"
+      >
+        <option v-if="ui.palKey === 'lesson'" value="lesson">レッスンの色</option>
         <option value="pico8">PICO-8</option>
         <option value="sweetie">Sweetie16</option>
         <option value="gray">グレースケール</option>

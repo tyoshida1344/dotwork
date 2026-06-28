@@ -3,6 +3,7 @@ import { S } from '../../core/state.js'
 import { ui } from '../../core/ui.js'
 import { drawPx } from '../../core/canvas.js'
 import { extractPaletteFromImage } from '../../core/palette.js'
+import { lessonState } from '../../core/lessons.js'
 import SidePanel from '../SidePanel.vue'
 import { ref } from 'vue'
 
@@ -34,6 +35,7 @@ function onOverlayInput(e) {
   drawPx()
 }
 function onExtract() {
+  if (lessonState.active) return  // レッスン中は色セットを固定（ボタンも disabled）
   if (!S.refImg) { alert('先に参照画像を読み込んでください。'); return }
   S.palette = extractPaletteFromImage(S.refImg)
   ui.palKey = 'ref'
@@ -79,7 +81,12 @@ function clearRef() {
       <span class="sval">{{ Math.round(S.overlay * 100) }}%</span>
     </div>
     <button class="abtn btn-a" style="margin-top:5px" @click="onConvert">▦ ドットに変換</button>
-    <button class="abtn" @click="onExtract">⬦ パレット抽出</button>
+    <button
+      class="abtn"
+      :disabled="!!lessonState.active"
+      :title="lessonState.active ? 'レッスン中は色セットが固定されます' : ''"
+      @click="onExtract"
+    >⬦ パレット抽出</button>
     <button class="abtn" style="color:var(--muted)" @click="clearRef">✕ 参照画像を消去</button>
   </SidePanel>
 </template>

@@ -74,6 +74,9 @@ button:hover { border-color: var(--amber); color: var(--amber); }
 .btn-r { border-color: #fca5a5; color: #dc2626; }
 .btn-r:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
 
+button:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+button:disabled:hover { border-color: var(--border); color: var(--text); background: var(--bg3); }
+
 /* ── ヘッダー ─────────────────────────────── */
 #hdr {
   grid-area: hdr;
@@ -480,6 +483,106 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 /* 縁取り色ピッカー */
 .out-col { width: 32px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; }
 
+/* ── レッスン：お題パネル（キャンバス横） ──── */
+#carea.lesson-on { gap: 16px; }
+.lesson-aside {
+  width: 210px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 92%;
+  overflow-y: auto;
+}
+.la-head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.la-lv {
+  font-family: 'Silkscreen', monospace;
+  font-size: 12px;
+  color: var(--on-accent);
+  background: var(--amber);
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.la-tag { color: var(--muted); font-size: 13px; }
+.la-thumb {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: repeating-conic-gradient(#cdd1d6 0% 25%, #f3f4f6 0% 50%) 0 / 14px 14px;
+  padding: 8px;
+  margin-bottom: 9px;
+}
+.la-thumb img {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.la-title { font-size: 14px; color: var(--text); margin-bottom: 5px; }
+.la-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 11px; }
+
+/* ── レッスン選択（全画面オーバーレイ） ─────── */
+#lpage {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  overflow-y: auto;
+}
+#lpage.open { display: block; }
+#lpage-inner { max-width: 920px; margin: 0 auto; padding: 36px 28px 60px; }
+#lpage-head { margin-bottom: 26px; }
+#lpage-logo {
+  display: block;
+  font-family: 'Silkscreen', monospace;
+  color: var(--amber);
+  font-size: 22px;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+#lpage-head p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 640px; }
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lesson-card.current { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.lesson-thumb {
+  background: repeating-conic-gradient(#cdd1d6 0% 25%, #f3f4f6 0% 50%) 0 / 16px 16px;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+.lesson-thumb img {
+  width: 128px; height: 128px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.lesson-body { padding: 13px; display: flex; flex-direction: column; flex: 1; }
+.lesson-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.lesson-lv {
+  font-family: 'Silkscreen', monospace;
+  font-size: 12px;
+  color: var(--on-accent);
+  background: var(--amber);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.lesson-spec { color: var(--muted); font-size: 12px; }
+.lesson-title { font-size: 15px; color: var(--text); margin-bottom: 6px; }
+.lesson-desc { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; flex: 1; }
+#lpage-close { position: fixed; top: 12px; right: 16px; padding: 5px 14px; z-index: 1; }
+
 /* ── サイドバー・ドロワー（スマホ用） ───────── */
 /* バックドロップとクローズボタンはデスクトップでは出さない（mobile-only / メディアクエリで制御） */
 #side-backdrop {
@@ -602,4 +705,14 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   .gnav-link.active { border-left: none; border-bottom-color: var(--amber); }
   #gcontent { padding: 20px 18px; }
   #gclose { top: 8px; right: 10px; }
+
+  /* レッスン：お題パネルはキャンバスの上に縦積み */
+  #carea.lesson-on { flex-direction: column; gap: 10px; padding: 8px; overflow-y: auto; }
+  .lesson-aside { width: 100%; max-width: 360px; max-height: none; }
+  .la-thumb img { max-width: 160px; margin: 0 auto; }
+
+  /* レッスン選択：余白を詰める */
+  #lpage-inner { padding: 20px 16px 48px; }
+  #lpage-logo { font-size: 18px; }
+  #lpage-close { top: 8px; right: 10px; }
 }

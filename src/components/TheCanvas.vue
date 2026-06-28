@@ -5,6 +5,7 @@ import { ui } from '../core/ui.js'
 import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoomCanvas, drawBg } from '../core/canvas.js'
 import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '../core/tools.js'
 import { saveUndo } from '../core/history.js'
+import { lessonState, exitLesson } from '../core/lessons.js'
 
 const bgcvEl   = ref(null)
 const cvEl     = ref(null)
@@ -171,7 +172,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="carea">
+  <div id="carea" :class="{ 'lesson-on': lessonState.active }">
+    <aside v-if="lessonState.active" class="lesson-aside">
+      <div class="la-head">
+        <span class="la-lv">Lv.{{ lessonState.active.level }}</span>
+        <span class="la-tag">お題</span>
+      </div>
+      <div class="la-thumb">
+        <img :src="lessonState.active.ref" :alt="lessonState.active.title">
+      </div>
+      <h3 class="la-title">{{ lessonState.active.title }}</h3>
+      <p class="la-desc">{{ lessonState.active.desc }}</p>
+      <button class="abtn" @click="exitLesson">✕ レッスンを終了</button>
+    </aside>
     <div ref="cwrapEl" id="cwrap">
       <canvas ref="bgcvEl"   id="bgcv"></canvas>
       <canvas ref="cvEl"     id="cv"></canvas>
