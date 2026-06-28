@@ -8,4 +8,5 @@ export const ui = reactive({
   cropOpen: false,     // 画像→ドット変換のクロップオーバーレイ表示
   panelOpen: false,    // スマホ：サイドバー（パネル）ドロワーの開閉
   palKey: 'pico8',     // パレットドロップダウンの選択値
+  lessonPageOpen: false, // レッスン選択の全画面オーバーレイ表示
 })
