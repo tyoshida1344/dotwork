@@ -19,7 +19,7 @@ function onSubmit() {
 <template>
   <div class="admin-login">
     <form class="admin-login-box" @submit.prevent="onSubmit">
-      <span class="admin-logo">LESSON ADMIN</span>
+      <span class="admin-logo">DOTWORK ADMIN</span>
       <p class="admin-login-note">管理者アカウントでログインしてください。</p>
 
       <label class="admin-field">

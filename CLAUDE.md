@@ -17,11 +17,12 @@
 
 ```
 src/
-  main.js / App.vue / router.js  ← エントリ、<router-view>、ルート定義（/ と /admin、/admin は遅延ロード・直リンクのみ）
+  main.js / App.vue / router.js  ← エントリ、<router-view>、ルート定義（/ と /admin＋子ルート、/admin は遅延ロード・直リンクのみ）
   style.css                      ← グローバル CSS（:root に CSS 変数）
   core/        ← 状態とロジック（Vanilla JS）: state / palette / canvas / tools / history / export / ui
                  ＋ レッスン管理まわり: lessons / supabase / lessonsApi
-  views/       ← EditorView（エディタ本体）/ AdminView（レッスン管理）
+  views/       ← EditorView（エディタ本体）/ AdminView（/admin のシェル: 認証＋ヘッダー）
+                 ＋ AdminHome（管理トップのメニュー）/ LessonAdmin（レッスン管理）
   components/  ← The*（Header/Toolbar/Canvas/Sidebar/StatusBar）、SidePanel、各オーバーレイ（Guide/Lesson/ImageImport）
     panels/    ← サイドバーの各パネル（Color / Palette / Enhance / Guides / Background / RefImage）
     admin/     ← AdminLogin / LessonForm
@@ -41,11 +42,11 @@ supabase/migrations/  ← DB マイグレーション（スキーマ・RLS・バ
 
 ### ルーティングとレッスン管理（router.js / lessons.js / lessonsApi.js / supabase.js）
 
-`vue-router`（history モード）でルートを2つだけ持つ。`/` = `EditorView`（エディタ本体）、`/admin` = `AdminView`（遅延ロード）。`/admin` は UI 上の導線を置かず**直リンクのみ**で到達する。`App.vue` は `<router-view>` だけ。SPA フォールバックは `netlify.toml` の redirect で対応。
+`vue-router`（history モード）。`/` = `EditorView`（エディタ本体）。`/admin` = `AdminView`（遅延ロード）で、これは **DOTWORK ADMIN の「シェル」**（Supabase 設定チェック・ログイン・共通ヘッダー・ログアウト）。管理機能そのものは子ルートに分離する: `/admin`（index）= `AdminHome`（管理トップのメニュー）、`/admin/lessons` = `LessonAdmin`（レッスン管理）。今後の管理機能は子ルート＋`AdminHome` のメニュー項目として足す。`/admin` は UI 上の導線を置かず**直リンクのみ**で到達し、エディタへ戻る導線も持たない。`App.vue` は `<router-view>` だけ。SPA フォールバックは `netlify.toml` の redirect で対応。
 
-レッスンの正データは **Supabase**（`lessons` テーブル＋公開バケット `lesson-refs`＋Supabase Auth）。`supabase.js` は env（`VITE_SUPABASE_*`）からクライアントを作り、未設定なら `null`。`lessonsApi.js` が CRUD・並び替え RPC（`reorder_lessons`、1トランザクション）・お題画像の upload/delete・認証を担い、DB 列（`row_id`/`slug`/`description`…）とフロントの形（`id`/`desc`…）を相互変換する。
+レッスンの正データは **Supabase**（`lessons` テーブル＋公開バケット `lesson-refs`＋Supabase Auth）。`supabase.js` は env（`VITE_SUPABASE_*`）からクライアントを作り、未設定なら `null`。`lessonsApi.js` が CRUD・並び替え RPC（`reorder_lessons`、1トランザクション）・お題画像の upload/delete・認証を担い、DB 列（`id`/`description`/`deleted_at`…）とフロントの形（`id`/`desc`…）を相互変換する。レッスンの削除は物理削除ではなく `deleted_at` を立てる**論理削除**で、一覧は `deleted_at is null` のみ取得する。
 
-`lessons.js` の `LESSONS` は**リアクティブ配列**。`loadLessons()` が Supabase から取得（未設定・失敗時はバンドル `lessons.json` にフォールバック）して中身を差し替える。`@supabase/supabase-js` をエディタ初期ロードのバンドルから外すため、`lessons.js` は `supabase`/`lessonsApi` を**動的 import** し、`LessonPage` を初めて開いた時に `ensureLessons()` で読み込む（`main.js` では先読みしない）。管理画面で更新したら `invalidateLessons()` を呼び、次にレッスン画面を開いた時に取り直す。
+`lessons.js` の `LESSONS` は**リアクティブ配列**。`loadLessons()` が Supabase から取得して中身を差し替える（未設定・取得失敗時は空。バンドルのフォールバックは持たない）。このとき**お題画像（`ref`）が無いレッスンは未公開扱いで除外**する（学習者向けの `LESSONS` にだけ効くフィルタで、管理画面が使う `fetchLessons()` は全件返す＝画像を付ければ公開される）。`@supabase/supabase-js` をエディタ初期ロードのバンドルから外すため、`lessons.js` は `supabase`/`lessonsApi` を**動的 import** し、`LessonPage` を初めて開いた時に `ensureLessons()` で読み込む（`main.js` では先読みしない）。管理画面で更新したら `invalidateLessons()` を呼び、次にレッスン画面を開いた時に取り直す。
 
 お題画像は公開バケットに**毎回ユニークなファイル名**で保存（CDN キャッシュ汚染・URL 列挙の回避）。差し替え・削除時は旧画像を `deleteRefImage()` で掃除する。書き込み（CRUD・アップロード）は RLS で authenticated のみ、閲覧は anon 可。
 

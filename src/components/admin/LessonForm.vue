@@ -15,12 +15,12 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/
 const ACCEPT = ['image/png', 'image/svg+xml']   // お題画像は PNG / SVG のみ
 const MAX_BYTES = 2 * 1024 * 1024                // 2MB 上限
 
-// props.lesson のコピーを編集する（親の配列を直接触らない）
-const form = reactive({ id: '', level: 1, title: '', desc: '', size: 16, palette: ['#000000'], ref: '' })
+// props.lesson のコピーを編集する（親の配列を直接触らない）。
+// id は自動採番の PK。新規作成時は undefined（保存時に採番される）。
+const form = reactive({ id: undefined, level: 1, title: '', desc: '', size: 16, palette: ['#000000'], ref: '' })
 let originalRef = ''   // 編集開始時点の画像 URL（差し替え時の掃除判定に使う）
 function reset(l) {
-  form.rowId = l.rowId
-  form.id = l.id || ''
+  form.id = l.id
   form.level = l.level ?? 1
   form.title = l.title || ''
   form.desc = l.desc || ''
@@ -69,7 +69,6 @@ async function onFile(e) {
 const paletteValid = computed(() => form.palette.every(c => HEX_RE.test(c)))
 
 function validate() {
-  if (!form.id.trim()) return 'ID（スラッグ）を入力してください。'
   if (!form.title.trim()) return 'タイトルを入力してください。'
   if (!Number.isInteger(form.level) || form.level < 1) return 'レベルは 1 以上の整数で入力してください。'
   if (!SIZES.includes(form.size)) return 'サイズが不正です。'
@@ -83,8 +82,7 @@ function onSubmit() {
   if (msg) { error.value = msg; return }
   error.value = ''
   emit('save', {
-    rowId: form.rowId,
-    id: form.id.trim(),
+    id: form.id,
     level: form.level,
     title: form.title.trim(),
     desc: form.desc.trim(),
@@ -106,13 +104,9 @@ function onCancel() {
   <div class="lf-backdrop" @click.self="onCancel">
     <div class="lf-modal">
       <div class="lf-edit">
-        <h2 class="lf-head">{{ form.rowId ? 'レッスンを編集' : '新しいレッスン' }}</h2>
+        <h2 class="lf-head">{{ form.id ? 'レッスンを編集' : '新しいレッスン' }}</h2>
 
         <div class="lf-row">
-          <label class="admin-field">
-            <span>ID（スラッグ・英数字）</span>
-            <input v-model="form.id" type="text" placeholder="例: diamond">
-          </label>
           <label class="admin-field lf-narrow">
             <span>レベル</span>
             <input v-model.number="form.level" type="number" min="1">

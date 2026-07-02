@@ -1,14 +1,13 @@
 import { supabase } from './supabase.js'
 
 // Supabase の lessons テーブルとフロントのレッスンオブジェクトを相互変換する。
-// DB 側は row_id(uuid PK) / slug(=画面上の id) / description(=desc, desc は SQL 予約語) を持つ。
+// DB 側は id(自動採番 PK) / description(=desc, desc は SQL 予約語) / deleted_at(論理削除) を持つ。
 const TABLE = 'lessons'
 const BUCKET = 'lesson-refs'
 
 function rowToLesson(r) {
   return {
-    rowId: r.row_id,
-    id: r.slug,
+    id: r.id,
     level: r.level,
     title: r.title,
     desc: r.description,
@@ -19,9 +18,10 @@ function rowToLesson(r) {
   }
 }
 
+// フロント → DB 行。id（PK）・sort_order・deleted_at は書き込み対象に含めない
+// （id は自動採番、sort_order は並び替え、deleted_at は削除処理でのみ触る）。
 function lessonToRow(l) {
   return {
-    slug: l.id,
     level: l.level,
     title: l.title,
     description: l.desc,
@@ -36,21 +36,23 @@ function assertClient() {
 }
 
 // ── レッスン CRUD ─────────────────────────────
-// 並び順は sort_order 昇順（管理画面の並び替えで決まる）。
+// 並び順は sort_order 昇順（管理画面の並び替えで決まる）。論理削除済み（deleted_at）は除外。
 export async function fetchLessons() {
   assertClient()
-  const { data, error } = await supabase.from(TABLE).select('*').order('sort_order', { ascending: true })
+  const { data, error } = await supabase
+    .from(TABLE).select('*').is('deleted_at', null).order('sort_order', { ascending: true })
   if (error) throw error
   return data.map(rowToLesson)
 }
 
 export async function createLesson(lesson) {
   assertClient()
-  // 末尾に追加する。現在の最大 sort_order + 1（0 件なら 0）。
+  // 末尾に追加する。現在（未削除）の最大 sort_order + 1（0 件なら 1）。sort_order は 1 始まり。
   const { data: maxRows, error: maxErr } = await supabase
-    .from(TABLE).select('sort_order').order('sort_order', { ascending: false }).limit(1)
+    .from(TABLE).select('sort_order').is('deleted_at', null)
+    .order('sort_order', { ascending: false }).limit(1)
   if (maxErr) throw maxErr
-  const nextOrder = maxRows.length ? maxRows[0].sort_order + 1 : 0
+  const nextOrder = maxRows.length ? maxRows[0].sort_order + 1 : 1
 
   const { data, error } = await supabase
     .from(TABLE).insert({ ...lessonToRow(lesson), sort_order: nextOrder }).select().single()
@@ -58,26 +60,28 @@ export async function createLesson(lesson) {
   return rowToLesson(data)
 }
 
-export async function updateLesson(rowId, lesson) {
+export async function updateLesson(id, lesson) {
   assertClient()
   const { data, error } = await supabase
     .from(TABLE).update({ ...lessonToRow(lesson), updated_at: new Date().toISOString() })
-    .eq('row_id', rowId).select().single()
+    .eq('id', id).select().single()
   if (error) throw error
   return rowToLesson(data)
 }
 
-export async function deleteLesson(rowId) {
+// 論理削除：物理削除せず deleted_at に時刻を入れる。お題画像はそのまま残す。
+export async function deleteLesson(id) {
   assertClient()
-  const { error } = await supabase.from(TABLE).delete().eq('row_id', rowId)
+  const { error } = await supabase
+    .from(TABLE).update({ deleted_at: new Date().toISOString() }).eq('id', id)
   if (error) throw error
 }
 
-// 並び替え結果を反映する。rowId の配列を受け取り、その順に sort_order を 0..n で振り直す。
+// 並び替え結果を反映する。id の配列を受け取り、その順に sort_order を 1..n で振り直す。
 // 1 トランザクションで完結する RPC（reorder_lessons）を使い、途中失敗で順序が壊れないようにする。
-export async function reorderLessons(orderedRowIds) {
+export async function reorderLessons(orderedIds) {
   assertClient()
-  const { error } = await supabase.rpc('reorder_lessons', { ids: orderedRowIds })
+  const { error } = await supabase.rpc('reorder_lessons', { ids: orderedIds })
   if (error) throw error
 }
 
