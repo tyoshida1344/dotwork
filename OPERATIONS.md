@@ -1,6 +1,6 @@
 # 本番運用（Operations）
 
-DOTWORKS の本番環境まわりの運用手順。対象は **フロントのデプロイ（Netlify）** と
+DOTWORK の本番環境まわりの運用手順。対象は **フロントのデプロイ（Netlify）** と
 **Supabase 本番のセットアップ／マイグレーション適用**。
 
 - ローカル開発・利用方法・機能: [README.md](README.md)

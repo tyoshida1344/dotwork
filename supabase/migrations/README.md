@@ -1,6 +1,6 @@
 # supabase/migrations
 
-DOTWORKS の DB スキーマは、このディレクトリのマイグレーションで管理する（**唯一の正**）。
+DOTWORK の DB スキーマは、このディレクトリのマイグレーションで管理する（**唯一の正**）。
 Supabase CLI が `*.sql` を**ファイル名の昇順**で適用し、適用済みは
 `supabase_migrations.schema_migrations` テーブルで追跡する。`.md` は適用対象外。
 

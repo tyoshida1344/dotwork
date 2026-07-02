@@ -1,4 +1,4 @@
--- DOTWORKS レッスン管理（イシュー #7）の初期スキーマ。
+-- DOTWORK レッスン管理（イシュー #7）の初期スキーマ。
 -- 以後のスキーマ変更（テーブル追加・カラム変更など）は新しいマイグレーションを追加する:
 --   npx supabase migration new <name>   → DDL を書く
 --   ローカル: npx supabase db reset / db push、本番: npx supabase db push
@@ -38,6 +38,13 @@ create policy "lessons write for authenticated"
   to authenticated
   using (true)
   with check (true);
+
+-- ── テーブル権限（Data API ロール）──────────────
+-- RLS ポリシーは「どの行を見せるか」を決めるだけで、テーブルへのアクセスには GRANT が要る。
+-- Supabase の新既定では public の新規テーブルが anon/authenticated へ自動公開されない
+-- （config.toml の auto_expose_new_tables 参照）ため、明示的に権限を付与する。
+grant select on public.lessons to anon, authenticated;
+grant insert, update, delete on public.lessons to authenticated;
 
 -- ── Storage: お題画像の公開バケット ──────────
 insert into storage.buckets (id, name, public)
