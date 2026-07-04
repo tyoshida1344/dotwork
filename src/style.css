@@ -485,6 +485,8 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 
 /* ── レッスン：お題パネル（キャンバス横） ──── */
 #carea.lesson-on { gap: 16px; }
+/* お題パネルをキャンバスの右側へ（flex の並び順を入れ替える） */
+#carea.aside-right .lesson-aside { order: 1; }
 .lesson-aside {
   width: 210px;
   flex-shrink: 0;
@@ -505,6 +507,18 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   border-radius: 3px;
 }
 .la-tag { color: var(--muted); font-size: 13px; }
+.la-swap {
+  margin-left: auto;   /* ヘッダー右端へ寄せる */
+  font-size: 13px;
+  line-height: 1;
+  padding: 3px 7px;
+  color: var(--muted);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.la-swap:hover { color: var(--text); border-color: var(--muted); }
 .la-thumb {
   border: 1px solid var(--border);
   border-radius: 4px;
