@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { S } from '../core/state.js'
-import { ui } from '../core/ui.js'
+import { ui, toggleLessonAsideSide } from '../core/ui.js'
 import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoomCanvas, drawBg } from '../core/canvas.js'
 import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '../core/tools.js'
 import { saveUndo } from '../core/history.js'
@@ -172,11 +172,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="carea" :class="{ 'lesson-on': lessonState.active }">
+  <div id="carea" :class="{ 'lesson-on': lessonState.active, 'aside-right': ui.lessonAsideSide === 'right' }">
     <aside v-if="lessonState.active" class="lesson-aside">
       <div class="la-head">
         <span class="la-lv">Lv.{{ lessonState.active.level }}</span>
         <span class="la-tag">お題</span>
+        <button
+          class="la-swap"
+          @click="toggleLessonAsideSide"
+          :title="ui.lessonAsideSide === 'right' ? 'お題を左側に移動' : 'お題を右側に移動'"
+        >⇄</button>
       </div>
       <div class="la-thumb">
         <img :src="lessonState.active.ref" :alt="lessonState.active.title">
