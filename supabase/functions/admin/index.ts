@@ -22,6 +22,13 @@ function json(body: unknown, status = 200) {
   })
 }
 
+// DB／内部エラーは詳細をサーバーログにだけ残し、クライアントには汎用文言を返す
+// （Postgres/PostgREST の内部情報をブラウザへ漏らさない）。
+function fail(where: string, detail: unknown, status = 400) {
+  console.error(`[admin] ${where}:`, (detail as Error)?.message ?? detail)
+  return json({ error: "処理に失敗しました。時間をおいて再度お試しください。" }, status)
+}
+
 // DB に保存したハッシュ（pg: encode(digest(token,'sha256'),'hex')）と一致させる
 async function sha256hex(s: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s))
@@ -45,7 +52,7 @@ Deno.serve(async (req) => {
       const { login_id, password } = body
       if (!login_id || !password) return json({ error: "ログインIDとパスワードを入力してください。" }, 400)
       const { data, error } = await db.rpc("admin_login", { p_login_id: login_id, p_password: password })
-      if (error) return json({ error: error.message }, 500)
+      if (error) return fail("login", error, 500)
       if (!data) return json({ error: "ログインID かパスワードが違います。" }, 401)
       return json({ token: data })
     }
@@ -69,6 +76,18 @@ Deno.serve(async (req) => {
     if (!sess || new Date(sess.expires_at) <= new Date()) {
       return json({ error: "セッションが無効です。再ログインしてください。" }, 401)
     }
+    // 発行元の管理者が論理削除されていないか確認する。
+    // 論理削除（deleted_at）は行削除ではないため FK の on delete cascade が効かず、
+    // ここで弾かないと失効まで（最大7日）トークンが有効なままになる。
+    const { data: admin } = await db
+      .from("admins")
+      .select("id")
+      .eq("id", sess.admin_id)
+      .is("deleted_at", null)
+      .maybeSingle()
+    if (!admin) {
+      return json({ error: "セッションが無効です。再ログインしてください。" }, 401)
+    }
 
     switch (action) {
       case "me":
@@ -84,7 +103,7 @@ Deno.serve(async (req) => {
           const { data, error } = await db.from("lessons")
             .update({ ...row, updated_at: new Date().toISOString() })
             .eq("id", l.id).select().single()
-          if (error) return json({ error: error.message }, 400)
+          if (error) return fail("saveLesson.update", error)
           return json({ lesson: data })
         }
         // 新規は末尾に追加（未削除の最大 sort_order + 1、無ければ 1）
@@ -94,20 +113,20 @@ Deno.serve(async (req) => {
         const nextOrder = maxRows && maxRows.length ? maxRows[0].sort_order + 1 : 1
         const { data, error } = await db.from("lessons")
           .insert({ ...row, sort_order: nextOrder }).select().single()
-        if (error) return json({ error: error.message }, 400)
+        if (error) return fail("saveLesson.insert", error)
         return json({ lesson: data })
       }
 
       case "deleteLesson": {
         const { error } = await db.from("lessons")
           .update({ deleted_at: new Date().toISOString() }).eq("id", body.id)
-        if (error) return json({ error: error.message }, 400)
+        if (error) return fail("deleteLesson", error)
         return json({ ok: true })
       }
 
       case "reorderLessons": {
         const { error } = await db.rpc("reorder_lessons", { ids: body.ids })
-        if (error) return json({ error: error.message }, 400)
+        if (error) return fail("reorderLessons", error)
         return json({ ok: true })
       }
 
@@ -116,7 +135,7 @@ Deno.serve(async (req) => {
         const ext = String(body.ext ?? "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png"
         const path = `${crypto.randomUUID()}.${ext}`
         const { data, error } = await db.storage.from(BUCKET).createSignedUploadUrl(path)
-        if (error) return json({ error: error.message }, 400)
+        if (error) return fail("createUploadUrl", error)
         const { data: pub } = db.storage.from(BUCKET).getPublicUrl(path)
         return json({ path, uploadToken: data.token, publicUrl: pub.publicUrl })
       }
@@ -127,7 +146,9 @@ Deno.serve(async (req) => {
         const i = String(body.url ?? "").indexOf(marker)
         if (i === -1) return json({ ok: true })
         const path = String(body.url).slice(i + marker.length)
-        if (path) await db.storage.from(BUCKET).remove([path])
+        // createUploadUrl が発行するのは常に単一階層の `uuid.ext`。
+        // その形以外（サブパス・パストラバーサル等）は掃除対象外として無視し、削除範囲を限定する。
+        if (/^[a-z0-9-]+\.[a-z0-9]+$/i.test(path)) await db.storage.from(BUCKET).remove([path])
         return json({ ok: true })
       }
 
@@ -135,7 +156,8 @@ Deno.serve(async (req) => {
         return json({ error: `unknown action: ${action}` }, 400)
     }
   } catch (e) {
-    // 想定外の例外でも CORS 付き JSON で返す（クライアントが原因不明の CORS エラーにならないように）
-    return json({ error: `サーバーエラー: ${(e as Error)?.message ?? e}` }, 500)
+    // 想定外の例外でも CORS 付き JSON で返す（クライアントが原因不明の CORS エラーにならないように）。
+    // 詳細はサーバーログにだけ残し、クライアントには汎用文言を返す。
+    return fail("unhandled", e, 500)
   }
 })
