@@ -131,13 +131,13 @@ Deno.serve(async (req) => {
       }
 
       case "createUploadUrl": {
-        // ユニークなパスに署名付きアップロードURLを発行（クライアントが直接そこへ PUT する）
+        // 署名付きアップロードURLをユニークなパスに発行する（クライアントが直接 PUT する）。
+        // レスポンスから path と token を受け取り、公開URLはクライアント側で組み立てる。（SUPABASE_URL はコンテナ間の内部ホストで、ローカルではブラウザから届かないため。）
         const ext = String(body.ext ?? "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png"
         const path = `${crypto.randomUUID()}.${ext}`
         const { data, error } = await db.storage.from(BUCKET).createSignedUploadUrl(path)
         if (error) return fail("createUploadUrl", error)
-        const { data: pub } = db.storage.from(BUCKET).getPublicUrl(path)
-        return json({ path, uploadToken: data.token, publicUrl: pub.publicUrl })
+        return json({ path, uploadToken: data.token })
       }
 
       case "deleteImage": {

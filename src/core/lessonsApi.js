@@ -84,11 +84,12 @@ export async function reorderLessons(orderedIds) {
 // CDN キャッシュ汚染・URL 列挙を避けるため、毎回ユニークなファイル名で保存する（発行は Edge Function）。
 export async function uploadRefImage(file) {
   const ext = (file.name.split('.').pop() || 'png').toLowerCase()
-  const { path, uploadToken, publicUrl } = await callAdmin('createUploadUrl', { ext })
+  const { path, uploadToken } = await callAdmin('createUploadUrl', { ext })
   const { error } = await supabase.storage.from(BUCKET)
     .uploadToSignedUrl(path, uploadToken, file, { contentType: file.type || undefined })
   if (error) throw error
-  return publicUrl
+  // 公開URLはクライアント側で組み立てる。（Edge Function の SUPABASE_URL はコンテナ間の内部ホストで、ローカルではブラウザから届かないため。クライアントの base URL＝VITE_SUPABASE_URL なら到達できる。）
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
 // 不要になった画像の掃除。失敗しても例外は投げず警告に留める。

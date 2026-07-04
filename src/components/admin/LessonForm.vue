@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, watch, computed } from 'vue'
+import { reactive, ref, watch, computed, onBeforeUnmount } from 'vue'
 import { uploadRefImage, deleteRefImage } from '../../core/lessonsApi.js'
 
 const props = defineProps({
@@ -19,6 +19,17 @@ const MAX_BYTES = 2 * 1024 * 1024                // 2MB 上限
 // id は自動採番の PK。新規作成時は undefined（保存時に採番される）。
 const form = reactive({ id: undefined, level: 1, title: '', desc: '', size: 16, palette: ['#000000'], ref: '' })
 let originalRef = ''   // 編集開始時点の画像 URL（差し替え時の掃除判定に使う）
+
+// 選択したお題画像は保存を押すまでアップロードしない。選択中のファイルはローカルに保持し、
+// プレビューは objectURL で表示する（アップロードは onSubmit でまとめて行う）。
+const pendingFile = ref(null)   // 選択済み・未アップロードのファイル | null
+const localPreview = ref('')    // pendingFile の表示用 objectURL
+function setPending(file) {
+  if (localPreview.value) URL.revokeObjectURL(localPreview.value)   // 前の objectURL を解放
+  pendingFile.value = file
+  localPreview.value = file ? URL.createObjectURL(file) : ''
+}
+
 function reset(l) {
   form.id = l.id
   form.level = l.level ?? 1
@@ -28,11 +39,16 @@ function reset(l) {
   form.palette = (l.palette && l.palette.length) ? [...l.palette] : ['#000000']
   form.ref = l.ref || ''
   originalRef = l.ref || ''
+  setPending(null)   // 別レッスンに切り替えたら選択中ファイルを破棄
 }
 watch(() => props.lesson, reset, { immediate: true })
+onBeforeUnmount(() => { if (localPreview.value) URL.revokeObjectURL(localPreview.value) })
 
 const uploading = ref(false)
 const error = ref('')
+
+// プレビューは選択中の新ファイルを優先、無ければ保存済みの ref を表示
+const previewUrl = computed(() => localPreview.value || form.ref)
 
 function addColor() { form.palette.push('#000000') }
 function removeColor(i) {
@@ -40,7 +56,8 @@ function removeColor(i) {
   form.palette.splice(i, 1)
 }
 
-async function onFile(e) {
+// ファイル選択時はアップロードせず、検証してローカルに保持するだけ（アップロードは保存時）。
+function onFile(e) {
   const file = e.target.files[0]
   if (!file) return
   error.value = ''
@@ -52,18 +69,8 @@ async function onFile(e) {
     error.value = '画像サイズは 2MB 以下にしてください。'
     e.target.value = ''; return
   }
-  uploading.value = true
-  try {
-    const url = await uploadRefImage(file)
-    // このセッションでアップロード済み（=未保存）の画像があれば差し替え前に掃除
-    if (form.ref && form.ref !== originalRef) deleteRefImage(form.ref)
-    form.ref = url
-  } catch (err) {
-    error.value = `画像のアップロードに失敗しました: ${err.message || err}`
-  } finally {
-    uploading.value = false
-    e.target.value = ''   // 同じファイルを選び直せるようにする
-  }
+  setPending(file)
+  e.target.value = ''   // 同じファイルを選び直せるようにする
 }
 
 const paletteValid = computed(() => form.palette.every(c => HEX_RE.test(c)))
@@ -77,10 +84,25 @@ function validate() {
   return ''   // お題画像（ref）は任意。後から追加できる
 }
 
-function onSubmit() {
+async function onSubmit() {
   const msg = validate()
   if (msg) { error.value = msg; return }
   error.value = ''
+  // 新しく選んだファイルがあれば、ここで初めてアップロードする。成功したら form.ref に
+  // 反映して pendingFile を空にするので、親の DB 保存が失敗して再度保存を押しても
+  // 二重アップロードにはならない。
+  if (pendingFile.value) {
+    uploading.value = true
+    try {
+      form.ref = await uploadRefImage(pendingFile.value)
+      setPending(null)
+    } catch (err) {
+      error.value = `画像のアップロードに失敗しました: ${err.message || err}`
+      return
+    } finally {
+      uploading.value = false
+    }
+  }
   emit('save', {
     id: form.id,
     level: form.level,
@@ -93,8 +115,10 @@ function onSubmit() {
   })
 }
 
-// 保存せず閉じる場合、このセッションでアップロードした未保存画像は掃除する
+// 保存せず閉じる場合の後片付け。選択しただけ（未アップロード）のファイルは objectURL を
+// 解放するだけでよい。保存失敗後などでアップロード済みの未保存画像があれば掃除する。
 function onCancel() {
+  setPending(null)
   if (form.ref && form.ref !== originalRef) deleteRefImage(form.ref)
   emit('cancel')
 }
@@ -144,14 +168,16 @@ function onCancel() {
         <div class="admin-field">
           <span>お題画像（PNG / SVG・2MBまで・任意）</span>
           <input type="file" accept="image/png,image/svg+xml" @change="onFile">
-          <span v-if="uploading" class="lf-hint">アップロード中…</span>
+          <span v-if="pendingFile" class="lf-hint">選択済み：保存時にアップロードされます</span>
         </div>
 
         <p v-if="error || submitError" class="admin-error">{{ error || submitError }}</p>
 
         <div class="lf-actions">
-          <button @click="onCancel">キャンセル</button>
-          <button class="btn-a" :disabled="uploading || saving" @click="onSubmit">{{ saving ? '保存中…' : '保存' }}</button>
+          <button :disabled="uploading || saving" @click="onCancel">キャンセル</button>
+          <button class="btn-a" :disabled="uploading || saving" @click="onSubmit">
+            {{ uploading ? 'アップロード中…' : saving ? '保存中…' : '保存' }}
+          </button>
         </div>
       </div>
 
@@ -160,7 +186,7 @@ function onCancel() {
         <span class="lf-preview-label">プレビュー</span>
         <article class="lesson-card">
           <div class="lesson-thumb">
-            <img v-if="form.ref" :src="form.ref" :alt="form.title">
+            <img v-if="previewUrl" :src="previewUrl" :alt="form.title">
             <div v-else class="lf-noimg">画像なし（任意）</div>
           </div>
           <div class="lesson-body">
@@ -170,7 +196,6 @@ function onCancel() {
             </div>
             <h3 class="lesson-title">{{ form.title || '（タイトル未入力）' }}</h3>
             <p class="lesson-desc">{{ form.desc || '（説明未入力）' }}</p>
-            <button type="button" class="abtn btn-a">▦ このレッスンを始める</button>
           </div>
         </article>
       </div>
