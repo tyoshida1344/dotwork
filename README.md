@@ -82,6 +82,14 @@ npx supabase start   # Docker 上にローカルスタックを起動
 - **停止**: `npx supabase stop`（データ保持） / `npx supabase stop --no-backup`（ローカル DB も破棄）。
 - **スキーマ変更**: 既存マイグレーションは編集せず**新しいマイグレーションを追加**する。作法は [`supabase/migrations/README.md`](supabase/migrations/README.md)、本番への適用は [OPERATIONS.md](OPERATIONS.md)。
 
+### トラブルシューティング（ローカル）
+
+- **`/admin` のログイン等で `{"message":"name resolution failed"}` が返る** — Edge Function を動かすコンテナ（`supabase_edge_runtime_<project_id>`。本プロジェクトの `project_id` は `dot-editor`）が落ちている（Windows で時々発生）。Kong が Edge Function のホストを解決できずこのエラーになる。関数のコード変更が原因ではないことが多い。
+  - 確認: `docker ps -a --filter name=supabase_edge_runtime`（`Exited` になっている）。
+  - 復旧（最小）: `docker start supabase_edge_runtime_dot-editor`。直らなければスタックごと `npx supabase stop && npx supabase start`。
+- **`supabase_vector_<project_id>` が `Restarting` を繰り返す** — ログ収集用のコンテナで、ローカルの動作には影響しない（無害）。放置してよい。
+- **ローカルだと Edge Function の CORS が常に `Access-Control-Allow-Origin: *` になる** — 手前の Kong（`functions-v1` ルートの `cors` プラグイン）が付与するため。関数側の `ALLOWED_ORIGINS` によるオリジン限定は**ローカルでは観測できず**、hosted（本番）でのみ効く（本番の Edge Function はこのローカル Kong を通らない）。
+
 ### 利用メモ
 
 - `npm run dev` で起動し、`http://localhost:5173/admin` にアクセス（UI 上の導線はなく直リンクのみ）。ログイン後にレッスンの新規作成・編集・削除・並び替えができる。
