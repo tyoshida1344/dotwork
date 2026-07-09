@@ -76,7 +76,11 @@ export function generateLamp(hex) {
   ]
 }
 
-export function extractPaletteFromImage(img) {
+// 画像から代表色を頻度順で抽出する。max は最大色数、pad=true なら不足分を黒で埋めて
+// 常に max 色を返す（エディタのパレットグリッド用）。minDist は近似色をまとめる閾値
+// （RGB のマンハッタン距離。大きいほど近い色を強く排除し、結果の色数は減る）。
+// レッスン登録フォームは max=8・pad=false・minDist を強めにして、近い色を残さず抽出色だけを得る。
+export function extractPaletteFromImage(img, { max = 16, pad = true, minDist = 36 } = {}) {
   const tmp = document.createElement('canvas')
   tmp.width = tmp.height = 64
   const tx = tmp.getContext('2d')
@@ -96,7 +100,7 @@ export function extractPaletteFromImage(img) {
   const sorted = [...freq.entries()].sort((a, b) => b[1] - a[1])
   const palette = []
   for (const [key] of sorted) {
-    if (palette.length >= 16) break
+    if (palette.length >= max) break
     const r = (key >> 16) & 0xFF
     const g = (key >> 8)  & 0xFF
     const b = key         & 0xFF
@@ -105,11 +109,11 @@ export function extractPaletteFromImage(img) {
       const pr = parseInt(p.slice(1, 3), 16)
       const pg = parseInt(p.slice(3, 5), 16)
       const pb = parseInt(p.slice(5, 7), 16)
-      return Math.abs(pr - r) + Math.abs(pg - g) + Math.abs(pb - b) < 36
+      return Math.abs(pr - r) + Math.abs(pg - g) + Math.abs(pb - b) < minDist
     })
     if (!tooClose) palette.push(hex)
   }
-  while (palette.length < 16) palette.push('#000000')
+  if (pad) while (palette.length < max) palette.push('#000000')
   return palette
 }
 
