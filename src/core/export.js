@@ -1,17 +1,23 @@
 import { S } from './state.js'
 
-export function exportPNG() {
+// ピクセル配列を PNG にしてダウンロードする。エディタ（現在のキャンバス）と
+// マイページ（保存済みの作品）で共用する。背景色・補助線は含めない。
+export function exportPixelsPNG(pixels, cols, rows, filename = 'sprite.png') {
   const scale = 16
   const ec = document.createElement('canvas')
-  ec.width = S.cols * scale; ec.height = S.rows * scale
+  ec.width = cols * scale; ec.height = rows * scale
   const ex = ec.getContext('2d')
-  for (let i = 0; i < S.pixels.length; i++) {
-    if (!S.pixels[i]) continue
-    ex.fillStyle = S.pixels[i]
-    ex.fillRect((i % S.cols) * scale, Math.floor(i / S.cols) * scale, scale, scale)
+  for (let i = 0; i < pixels.length; i++) {
+    if (!pixels[i]) continue
+    ex.fillStyle = pixels[i]
+    ex.fillRect((i % cols) * scale, Math.floor(i / cols) * scale, scale, scale)
   }
   const a = document.createElement('a')
-  a.download = 'sprite.png'
+  a.download = filename
   a.href = ec.toDataURL('image/png')
   a.click()
+}
+
+export function exportPNG() {
+  exportPixelsPNG(S.pixels, S.cols, S.rows)
 }

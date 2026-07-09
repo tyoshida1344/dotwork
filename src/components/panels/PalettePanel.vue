@@ -28,6 +28,7 @@ function onPalChange(e) {
         @change="onPalChange"
       >
         <option v-if="ui.palKey === 'lesson'" value="lesson">レッスンの色</option>
+        <option v-if="ui.palKey === 'work'" value="work">作品の色</option>
         <option value="pico8">PICO-8</option>
         <option value="sweetie">Sweetie16</option>
         <option value="gray">グレースケール</option>

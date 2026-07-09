@@ -18,6 +18,8 @@
 | **参照画像** | 読み込み・オーバーレイ表示・パレット抽出 |
 | **Undo / Redo** | 60手まで |
 | **PNG 書き出し** | 16倍スケール・背景透過 |
+| **ログイン** | Google アカウント（Supabase Auth） |
+| **作品の保存** | 保存した作品をマイページから再開・整理（1アカウント20件まで） |
 
 ## セットアップ
 
@@ -42,11 +44,11 @@ npm run preview  # ビルド結果の確認
 
 本番デプロイ・本番 DB へのマイグレーション適用は [OPERATIONS.md](OPERATIONS.md) を参照。
 
-## レッスン管理（Supabase）
+## Supabase 連携（レッスン管理・ログイン）
 
-レッスン管理画面 `/admin` は、レッスンデータの保存に Supabase（DB / 認証 / ストレージ）を使います。ここでは**ローカルでの動かし方**を説明します。**本番セットアップ・本番へのマイグレーション適用・デプロイは [OPERATIONS.md](OPERATIONS.md)** を、設計・仕組みは [`CLAUDE.md`](CLAUDE.md) の「ルーティングとレッスン管理」を参照。
+レッスン管理画面 `/admin` と、学習者のログイン・作品の保存（`/mypage`）は Supabase（DB / 認証 / ストレージ）を使います。ここでは**ローカルでの動かし方**を説明します。**本番セットアップ・本番へのマイグレーション適用・デプロイは [OPERATIONS.md](OPERATIONS.md)** を、設計・仕組みは [`CLAUDE.md`](CLAUDE.md) の「ルーティングとレッスン管理」「学習者アカウントと作品」を参照。
 
-> Supabase 未設定でもエディタ（描画）は動作しますが、レッスンは取得できず一覧が空になります（`/admin` は「未設定」表示）。
+> Supabase 未設定でもエディタ（描画）は動作しますが、レッスンは取得できず一覧が空になり、ログイン導線も出ません（`/admin` は「未設定」表示）。
 
 ### ローカル開発（Supabase CLI）
 
@@ -82,6 +84,17 @@ npx supabase start   # Docker 上にローカルスタックを起動
 - **停止**: `npx supabase stop`（データ保持） / `npx supabase stop --no-backup`（ローカル DB も破棄）。
 - **スキーマ変更**: 既存マイグレーションは編集せず**新しいマイグレーションを追加**する。作法は [`supabase/migrations/README.md`](supabase/migrations/README.md)、本番への適用は [OPERATIONS.md](OPERATIONS.md)。
 
+### Google ログイン（学習者アカウント・ローカル）
+
+作品の保存とマイページは Google ログインが必要（管理者アカウントとは別系統）。ローカルで試すには Google Cloud の OAuth クライアントを用意する。
+
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で **OAuth 2.0 クライアント ID**（種類: ウェブアプリケーション）を作成する。
+2. **承認済みのリダイレクト URI** に `http://127.0.0.1:54321/auth/v1/callback` を追加する（ローカル Supabase の Auth コールバック）。
+3. 発行されたクライアント ID とシークレットを `.env` の `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` / `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` に設定する。
+4. `npx supabase stop && npx supabase start`（`config.toml` と `.env` を読み直させる）。
+
+ログイン後の戻り先は `config.toml` の `site_url`（`http://localhost:5173`＝Vite の開発サーバー）。本番の設定は [OPERATIONS.md](OPERATIONS.md)。
+
 ### トラブルシューティング（ローカル）
 
 - **`/admin` のログイン等で `{"message":"name resolution failed"}` が返る** — Edge Function を動かすコンテナ（`supabase_edge_runtime_<project_id>`。本プロジェクトの `project_id` は `dot-editor`）が落ちている（Windows で時々発生）。Kong が Edge Function のホストを解決できずこのエラーになる。関数のコード変更が原因ではないことが多い。
@@ -96,6 +109,8 @@ npx supabase start   # Docker 上にローカルスタックを起動
 - お題画像は **PNG / SVG・2MB まで・任意**。アップロードすると公開バケットにユニークなファイル名で保存され、差し替え・削除時に旧画像は自動で掃除される。未設定のカードは「画像なし」表示になる。
 - 既定 4 レッスンのお題画像は `src/assets/lessons/lv1/`・`lv2/` にあるので、初回はそれぞれ編集してアップロードする。
 - 公開バケットのため、URL を知れば誰でも画像を閲覧可能（お題画像は元々公開前提）。
+- 作品の保存はヘッダーの「保存」から。マイページ（`/mypage`）で開き直し・リネーム・複製・PNG 書き出し・削除ができる。**1アカウント 20 件まで**で、上限に達したら削除しないと新規保存できない（既存作品への上書きは可）。
+- 保存されるのはピクセル・キャンバスサイズ・色セット・補助線・レッスン紐づけ。背景色・参照画像・アンドゥ履歴は保存されない。レッスン中に保存した作品を開くとレッスンモードごと復元する。
 
 ## キーボードショートカット
 
