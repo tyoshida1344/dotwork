@@ -42,6 +42,9 @@ function onExtract() {
   ui.palKey = 'ref'
 }
 function onConvert() {
+  // お題オーバーレイ中はお題（クロスオリジン画像）が S.refImg。canvas を汚染して
+  // getImageData が失敗するため変換させない（ボタンも disabled）。
+  if (ui.lessonOverlayOn) { alert('お題は「ドットに変換」できません。'); return }
   if (!S.refImg) { alert('先に参照画像を読み込んでください。'); return }
   ui.cropOpen = true
 }
@@ -82,7 +85,13 @@ function clearRef() {
       >
       <span class="sval">{{ Math.round(S.overlay * 100) }}%</span>
     </div>
-    <button class="abtn btn-a" style="margin-top:5px" @click="onConvert">▦ ドットに変換</button>
+    <button
+      class="abtn btn-a"
+      style="margin-top:5px"
+      :disabled="ui.lessonOverlayOn"
+      :title="ui.lessonOverlayOn ? 'お題は変換できません（「背景に重ねる」を解除してください）' : ''"
+      @click="onConvert"
+    >▦ ドットに変換</button>
     <button
       class="abtn"
       :disabled="!!lessonState.active"

@@ -80,9 +80,14 @@ export function exitLesson() {
 export function setLessonOverlay(on) {
   if (on && lessonState.active) {
     if (S.overlay <= 0) S.overlay = 0.3   // 全く見えない設定だったら既定の濃さに戻す
+    const lesson = lessonState.active
     const img = new Image()
-    img.onload = () => { S.refImg = img; drawPx() }
-    img.src = lessonState.active.ref
+    // 非同期読み込み。完了時にまだ同じレッスンで overlay が ON のままなら反映する。
+    // 途中で OFF/別レッスンへ切り替えていたら破棄し、幽霊オーバーレイの残留を防ぐ。
+    img.onload = () => {
+      if (ui.lessonOverlayOn && lessonState.active === lesson) { S.refImg = img; drawPx() }
+    }
+    img.src = lesson.ref
     ui.lessonOverlayOn = true
   } else {
     S.refImg = null

@@ -191,7 +191,10 @@ function onLaPointerdown(e) {
 
 function onLaPointermove(e) {
   const p = laPointers.get(e.pointerId)
-  if (!p || laPointers.size < 2) return   // ピンチ（2本指）のときだけ拡大縮小
+  if (!p) return
+  // 1本指では拡大縮小しない。ただし記憶座標は更新して、2本目が触れた瞬間の
+  // ピンチ距離が正しく計算されるようにする（初回フレームのズーム飛びを防ぐ）。
+  if (laPointers.size < 2) { p.x = e.clientX; p.y = e.clientY; return }
   const other = [...laPointers].find(([id]) => id !== e.pointerId)?.[1]
   if (!other) return
   const prev = Math.hypot(p.x - other.x, p.y - other.y)
