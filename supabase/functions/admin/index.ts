@@ -9,24 +9,33 @@ const url = Deno.env.get("SUPABASE_URL")!
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 const BUCKET = "lesson-refs"
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-admin-token",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+// CORS 許可オリジン: 環境変数 ALLOWED_ORIGINS（カンマ区切り）に載る Origin だけを許可し、
+// 一致した時だけそのオリジンをエコーする（`*` は使わない）。未設定時はローカル開発オリジンのみ
+// 許可する（本番は `supabase secrets set ALLOWED_ORIGINS=...` で設定する）。
+const DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+const ALLOWED_ORIGINS = (() => {
+  const set = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+    .split(",").map((s) => s.trim()).filter(Boolean)
+  return set.length ? set : DEV_ORIGINS
+})()
+
+function corsHeaders(origin: string | null): Record<string, string> {
+  const h: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-admin-token",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  }
+  // 許可リストに無いオリジンには ACAO を付けない（ブラウザ側でブロックされる）。
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    h["Access-Control-Allow-Origin"] = origin
+  }
+  return h
 }
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, "Content-Type": "application/json" },
-  })
-}
-
-// DB／内部エラーは詳細をサーバーログにだけ残し、クライアントには汎用文言を返す
-// （Postgres/PostgREST の内部情報をブラウザへ漏らさない）。
-function fail(where: string, detail: unknown, status = 400) {
-  console.error(`[admin] ${where}:`, (detail as Error)?.message ?? detail)
-  return json({ error: "処理に失敗しました。時間をおいて再度お試しください。" }, status)
+// ログイン試行元の IP。Supabase のゲートウェイが x-forwarded-for に載せる先頭を採用する。
+function clientIp(req: Request): string {
+  const xff = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim()
+  return xff || (req.headers.get("x-real-ip") ?? "").trim()
 }
 
 // DB に保存したハッシュ（pg: encode(digest(token,'sha256'),'hex')）と一致させる
@@ -36,6 +45,21 @@ async function sha256hex(s: string): Promise<string> {
 }
 
 Deno.serve(async (req) => {
+  const cors = corsHeaders(req.headers.get("origin"))
+
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    })
+
+  // DB／内部エラーは詳細をサーバーログにだけ残し、クライアントには汎用文言を返す
+  // （Postgres/PostgREST の内部情報をブラウザへ漏らさない）。
+  const fail = (where: string, detail: unknown, status = 400) => {
+    console.error(`[admin] ${where}:`, (detail as Error)?.message ?? detail)
+    return json({ error: "処理に失敗しました。時間をおいて再度お試しください。" }, status)
+  }
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors })
 
   try {
@@ -47,14 +71,24 @@ Deno.serve(async (req) => {
     try { body = await req.json() } catch { return json({ error: "Invalid JSON" }, 400) }
     const action = body?.action as string
 
-    // ── login はトークン不要 ──
+    // ── login はトークン不要。IP 単位のスロットリングは admin_login（DB）が判定する ──
     if (action === "login") {
       const { login_id, password } = body
       if (!login_id || !password) return json({ error: "ログインIDとパスワードを入力してください。" }, 400)
-      const { data, error } = await db.rpc("admin_login", { p_login_id: login_id, p_password: password })
+      const { data, error } = await db.rpc("admin_login", {
+        p_login_id: login_id, p_password: password, p_ip: clientIp(req),
+      })
       if (error) return fail("login", error, 500)
-      if (!data) return json({ error: "ログインID かパスワードが違います。" }, 401)
-      return json({ token: data })
+      if (data?.status === "ok") return json({ token: data.token })
+      if (data?.status === "locked") {
+        // 試行回数超過（バックオフ待ち or ハードロック）。Retry-After 秒を添えて 429。
+        const retry = Math.max(1, Number(data.retry_after) || 60)
+        return new Response(
+          JSON.stringify({ error: `試行回数が多すぎます。${retry} 秒ほど待って再度お試しください。` }),
+          { status: 429, headers: { ...cors, "Content-Type": "application/json", "Retry-After": String(retry) } },
+        )
+      }
+      return json({ error: "ログインID かパスワードが違います。" }, 401)
     }
 
     // ── 以降はトークン必須。DB はハッシュ保存なので照合はハッシュで行う ──

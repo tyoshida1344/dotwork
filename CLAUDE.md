@@ -55,6 +55,8 @@ supabase/functions/   ← Edge Function（admin: 管理者認証・レッスン/
 
 管理者は **Supabase Auth と切り離した独自アカウント**。`admins` テーブル（`login_id`＋bcrypt ハッシュの `password`）＋`admin_sessions`（トークンは sha256 ハッシュで保存）で認証する。ログイン・書き込み・お題画像は Edge Function `supabase/functions/admin`（**service_role**）が担い、クライアント（anon）は `x-admin-token` を送るだけ。RLS は `lessons`/バケットとも**書き込みをクライアントから禁止**し（service_role のみ）、読み取りは全員。これは学習者アカウント（Supabase Auth／将来 Google）を管理者と**完全分離**するため。管理者の作成・パス変更は DB 操作（Studio / SQL、`admin_hash_password()`）で行う。`admin` 関数は独自トークン認証のため `config.toml` で `verify_jwt = false`。
 
+総当たり対策として、`admin_login` は **IP 単位のログイン失敗スロットリング**を行う（`admin_login_attempts` テーブルに IP ごとの失敗回数を記録し、指数バックオフ＝再試行間隔を `2^(失敗回数-1)` 秒に広げ、5回失敗で1時間ロック。成功でクリア）。IP は Edge Function が `x-forwarded-for` から取り出して RPC に渡す。戻り値は `jsonb`（`{status: ok|invalid|locked, token?, retry_after?}`）で、`locked` は関数が `429 + Retry-After` に変換する。CORS は `*` を使わず、環境変数 `ALLOWED_ORIGINS`（カンマ区切り・未設定時はローカル開発オリジンのみ）に載る Origin だけをエコーする。
+
 ### 3層キャンバス（canvas.js）
 
 `bgcv` → `cv` → `gridcv` の順に重なる（全て `position: absolute`）。`gridcv` が最前面でマウスイベントを受け取る。
