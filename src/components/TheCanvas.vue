@@ -5,7 +5,7 @@ import { ui, toggleLessonAsideSide } from '../core/ui.js'
 import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoomCanvas, drawBg } from '../core/canvas.js'
 import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '../core/tools.js'
 import { saveUndo } from '../core/history.js'
-import { lessonState, exitLesson } from '../core/lessons.js'
+import { lessonState, exitLesson, setLessonOverlay } from '../core/lessons.js'
 
 const bgcvEl   = ref(null)
 const cvEl     = ref(null)
@@ -165,6 +165,48 @@ watch(() => S.bg,        drawBg)
 watch(() => S.headUnits, () => drawHover(ui.hoverPos?.[0] ?? null, ui.hoverPos?.[1] ?? null))
 watch(() => S.vDivUnits, () => drawHover(ui.hoverPos?.[0] ?? null, ui.hoverPos?.[1] ?? null))
 
+// ── お題パネルの拡大縮小（ホイール/ピンチでパネルごと拡大、ダブルクリックで戻す） ──
+// laScale を CSS 変数 --la-scale に流し、パネル幅（スマホは画像の最大幅）を style.css 側で
+// 拡大する。お題画像は width:100% なのでパネルに追従して大きくなる。
+const laThumbEl = ref(null)   // 操作を受けるお題画像の枠
+const laScale = ref(1)        // パネルの拡大率（1=既定サイズ）
+const LA_SCALE_MIN = 1, LA_SCALE_MAX = 3
+const laPointers = new Map()  // ピンチ用に追跡中のポインタ
+
+// レッスンを切り替える／終了したら既定サイズに戻す（拡大率は保存しない）
+watch(() => lessonState.active, () => { laScale.value = 1 })
+
+function setLaScale(s) {
+  laScale.value = Math.max(LA_SCALE_MIN, Math.min(LA_SCALE_MAX, s))
+}
+
+function onLaWheel(e) {
+  setLaScale(laScale.value * (e.deltaY < 0 ? 1.12 : 1 / 1.12))
+}
+
+function onLaPointerdown(e) {
+  laThumbEl.value.setPointerCapture?.(e.pointerId)
+  laPointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+}
+
+function onLaPointermove(e) {
+  const p = laPointers.get(e.pointerId)
+  if (!p) return
+  // 1本指では拡大縮小しない。ただし記憶座標は更新して、2本目が触れた瞬間の
+  // ピンチ距離が正しく計算されるようにする（初回フレームのズーム飛びを防ぐ）。
+  if (laPointers.size < 2) { p.x = e.clientX; p.y = e.clientY; return }
+  const other = [...laPointers].find(([id]) => id !== e.pointerId)?.[1]
+  if (!other) return
+  const prev = Math.hypot(p.x - other.x, p.y - other.y)
+  p.x = e.clientX; p.y = e.clientY
+  const now = Math.hypot(p.x - other.x, p.y - other.y)
+  if (prev > 0) setLaScale(laScale.value * (now / prev))
+}
+
+function onLaPointerup(e) { laPointers.delete(e.pointerId) }
+
+function onToggleLessonOverlay() { setLessonOverlay(!ui.lessonOverlayOn) }
+
 onMounted(() => {
   initContexts(bgcvEl.value, cvEl.value, gridcvEl.value, cwrapEl.value)
   resize()
@@ -173,7 +215,7 @@ onMounted(() => {
 
 <template>
   <div id="carea" :class="{ 'lesson-on': lessonState.active, 'aside-right': ui.lessonAsideSide === 'right' }">
-    <aside v-if="lessonState.active" class="lesson-aside">
+    <aside v-if="lessonState.active" class="lesson-aside" :style="{ '--la-scale': laScale }">
       <div class="la-head">
         <span class="la-lv">Lv.{{ lessonState.active.level }}</span>
         <span class="la-tag">お題</span>
@@ -183,11 +225,27 @@ onMounted(() => {
           :title="ui.lessonAsideSide === 'right' ? 'お題を左側に移動' : 'お題を右側に移動'"
         >⇄</button>
       </div>
-      <div class="la-thumb">
+      <div
+        ref="laThumbEl"
+        class="la-thumb"
+        title="ホイール/ピンチでお題パネルを拡大・ダブルクリックで戻す"
+        @wheel.prevent="onLaWheel"
+        @pointerdown="onLaPointerdown"
+        @pointermove="onLaPointermove"
+        @pointerup="onLaPointerup"
+        @pointercancel="onLaPointerup"
+        @dblclick="setLaScale(1)"
+      >
         <img :src="lessonState.active.ref" :alt="lessonState.active.title">
       </div>
       <h3 class="la-title">{{ lessonState.active.title }}</h3>
       <p class="la-desc">{{ lessonState.active.desc }}</p>
+      <button
+        class="abtn la-overlay"
+        :class="{ on: ui.lessonOverlayOn }"
+        :title="ui.lessonOverlayOn ? '不透明度は REFERENCE パネルで調整できます' : ''"
+        @click="onToggleLessonOverlay"
+      >{{ ui.lessonOverlayOn ? '☑ 背景に重ねる' : '☐ 背景に重ねる' }}</button>
       <button class="abtn" @click="exitLesson">✕ レッスンを終了</button>
     </aside>
     <div ref="cwrapEl" id="cwrap">
