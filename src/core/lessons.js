@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { S } from './state.js'
 import { ui } from './ui.js'
-import { resize } from './canvas.js'
+import { resize, drawPx } from './canvas.js'
 import { clearHistory } from './history.js'
 
 // Supabase が設定されているか（env のみで判定）。
@@ -61,11 +61,32 @@ export function startLesson(lesson) {
   ui.palKey = 'lesson'
   ui.lessonPageOpen = false
 
+  // お題オーバーレイは既定オフで始める。前レッスンで重ねていたお題画像は片付ける
+  // （手動で読み込んだ参照画像は残す）。
+  if (ui.lessonOverlayOn) { S.refImg = null; ui.lessonOverlayOn = false }
   lessonState.active = lesson
   resize()
 }
 
 // レッスンを終了して通常モードへ戻る。描いた絵・サイズ・パレットはそのまま残す。
 export function exitLesson() {
+  if (ui.lessonOverlayOn) setLessonOverlay(false)   // お題の重ね表示は持ち越さない
   lessonState.active = null
+}
+
+// お題をキャンバス背景へ透過表示する（参照画像オーバーレイの枠を流用）。
+// on にするとお題画像を S.refImg へ読み込み、off で消す。不透明度は
+// REFERENCE パネルの既存スライダー（S.overlay）で共有調整する。
+export function setLessonOverlay(on) {
+  if (on && lessonState.active) {
+    if (S.overlay <= 0) S.overlay = 0.3   // 全く見えない設定だったら既定の濃さに戻す
+    const img = new Image()
+    img.onload = () => { S.refImg = img; drawPx() }
+    img.src = lessonState.active.ref
+    ui.lessonOverlayOn = true
+  } else {
+    S.refImg = null
+    ui.lessonOverlayOn = false
+    drawPx()
+  }
 }

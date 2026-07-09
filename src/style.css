@@ -488,7 +488,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 /* お題パネルをキャンバスの右側へ（flex の並び順を入れ替える） */
 #carea.aside-right .lesson-aside { order: 1; }
 .lesson-aside {
-  width: 210px;
+  width: calc(210px * var(--la-scale, 1));   /* ホイール/ピンチでパネルごと拡大縮小 */
   flex-shrink: 0;
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -525,6 +525,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   background: repeating-conic-gradient(#cdd1d6 0% 25%, #f3f4f6 0% 50%) 0 / 14px 14px;
   padding: 8px;
   margin-bottom: 9px;
+  touch-action: none;        /* ピンチ操作をブラウザのズーム/スクロールに奪われない */
 }
 .la-thumb img {
   display: block;
@@ -534,6 +535,9 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 }
 .la-title { font-size: 14px; color: var(--text); margin-bottom: 5px; }
 .la-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 11px; }
+/* お題を背景に重ねるトグル（オン時はアンバーで塗って状態を明示）。
+   不透明度の案内はトグルの title 属性でホバー時のみ表示する。 */
+.la-overlay.on { border-color: var(--amber); background: var(--amber-soft); color: var(--amber); }
 
 /* ── レッスン選択（全画面オーバーレイ） ─────── */
 #lpage {
@@ -720,10 +724,11 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   #gcontent { padding: 20px 18px; }
   #gclose { top: 8px; right: 10px; }
 
-  /* レッスン：お題パネルはキャンバスの上に縦積み */
+  /* レッスン：お題パネルはキャンバスの上に縦積み。
+     スマホは横幅いっぱいなので、パネル幅ではなくお題画像の最大幅を拡大する。 */
   #carea.lesson-on { flex-direction: column; gap: 10px; padding: 8px; overflow-y: auto; }
   .lesson-aside { width: 100%; max-width: 360px; max-height: none; }
-  .la-thumb img { max-width: 160px; margin: 0 auto; }
+  .la-thumb img { max-width: calc(160px * var(--la-scale, 1)); margin: 0 auto; }
 
   /* レッスン選択：余白を詰める */
   #lpage-inner { padding: 20px 16px 48px; }

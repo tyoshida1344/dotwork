@@ -19,6 +19,7 @@ function loadFile(file) {
     img.onload = () => {
       S.refImg = img
       previewSrc.value = e.target.result
+      ui.lessonOverlayOn = false   // 手動の参照画像に差し替わったのでお題オーバーレイ表示は解除
       drawPx()
     }
     img.src = e.target.result
@@ -47,6 +48,7 @@ function onConvert() {
 function clearRef() {
   S.refImg = null
   previewSrc.value = ''
+  ui.lessonOverlayOn = false   // 参照画像を消したらお題オーバーレイのトグル表示も戻す
   drawPx()
 }
 </script>

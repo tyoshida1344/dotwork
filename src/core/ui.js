@@ -14,6 +14,7 @@ export const ui = reactive({
   palKey: 'pico8',     // パレットドロップダウンの選択値
   lessonPageOpen: false, // レッスン選択の全画面オーバーレイ表示
   lessonAsideSide: savedAsideSide, // 'left' | 'right'：お題パネルをキャンバスのどちら側に出すか
+  lessonOverlayOn: false, // お題をキャンバス背景に透過表示中か（参照画像オーバーレイの枠を流用）
 })
 
 // お題パネルの左右を切り替えて保存する。
