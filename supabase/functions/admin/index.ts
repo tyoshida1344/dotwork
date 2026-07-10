@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
           { status: 429, headers: { ...cors, "Content-Type": "application/json", "Retry-After": String(retry) } },
         )
       }
-      return json({ error: "ログインID かパスワードが違います。" }, 401)
+      return json({ error: "ログインIDかパスワードが違います。" }, 401)
     }
 
     // ── 以降はトークン必須。DB はハッシュ保存なので照合はハッシュで行う ──

@@ -54,7 +54,7 @@ const SECTIONS = [
       <li><strong>シルエットを描く</strong> — まず1色だけでカタチを描きます。色や影はまだ。「輪郭だけで何か分かる」かが最重要です。</li>
       <li><strong>ベース色を置く</strong> — 各パーツに基本の色を1色ずつ。塗りつぶし <kbd>G</kbd> が便利です。陰影はまだつけません。</li>
       <li><strong>影と光を足す</strong> — シャドウランプで立体感を出します。光が来る向き（光源）を最初に1つ決め、最後までブレさせないこと。</li>
-      <li><strong>縁取りする</strong> — <strong>Auto Outline</strong> でシルエットを縁取り、背景から浮かせます。</li>
+      <li><strong>縁取りする</strong> — <strong>自動縁取り</strong> でシルエットを縁取り、背景から浮かせます。</li>
       <li><strong>ディテールと仕上げ</strong> — 目・模様などの細部を足し、浮いた1ドットを掃除します。</li>
     </ol>
     <p>行き詰まったら一度ズームアウトして、シルエットだけを眺めてみましょう。左右対称のものは <kbd>S</kbd> の対称モードで半分だけ描けば倍速です。キャラクターは <strong>GUIDES</strong> の頭身ガイドで頭・胴・脚の比率を取れます。</p>
@@ -63,7 +63,7 @@ const SECTIONS = [
   {
     id: 'small', nav: '① 小さく始める', html: `
     <h2>① 小さく始める</h2>
-    <p>ゲームスプライトには <strong>16×16</strong> で十分です。このサイズでは1ドット1ドットが意味を持つため、悪い選択をしにくくなります。</p>
+    <p>ゲームのドット絵には <strong>16×16</strong> で十分です。このサイズでは1ドット1ドットが意味を持つため、悪い選択をしにくくなります。</p>
     <p>ヘッダーの <strong>SIZE</strong> ドロップダウンでキャンバスサイズを選べます。書き出しは常に16倍スケール（16×16 → 256×256 PNG）になります。</p>
     <p>まず16×16で始め、描くものが明確になったら32×32に移行しましょう。</p>
     `,
@@ -71,14 +71,14 @@ const SECTIONS = [
   {
     id: 'palette', nav: '② 色を絞る', html: `
     <h2>② 色を絞る</h2>
-    <p>プロのドット絵師はスプライト1枚に <strong>4〜8色</strong> 程度しか使いません。色が多すぎると濁った印象になります。サイドバーの <strong>PALETTE</strong> から3つのカラーセットを選べます：</p>
+    <p>プロのドット絵師は1枚に <strong>4〜8色</strong> 程度しか使いません。色が多すぎると濁った印象になります。サイドバーの <strong>PALETTE</strong> から3つのパレットを選べます：</p>
     <ul>
-      <li><strong>PICO-8</strong> — 小さいスプライトとゲーム向けの16色</li>
+      <li><strong>PICO-8</strong> — 小さいドット絵とゲーム向けの16色</li>
       <li><strong>Sweetie16</strong> — 温かみのある自然な16色</li>
       <li><strong>グレースケール</strong> — 16段階のグレー。形を決めてから色をつける際に便利</li>
       <li><strong>画像から抽出</strong> — 参照画像の上位16色を自動抽出</li>
     </ul>
-    <p>1枚のスプライトにはパレットを統一しましょう。パレットにない色は使わないのが原則です。</p>
+    <p>1枚のドット絵にはパレットを統一しましょう。パレットにない色は使わないのが原則です。</p>
     `,
   },
   {
@@ -116,23 +116,23 @@ const SECTIONS = [
     </ul>
     <h2 style="margin-top:24px">使わない方がいい時</h2>
     <ul>
-      <li><strong>小さいスプライト（16×16 程度）</strong> — 点がノイズに見えやすく、ベタ塗り＋陰影の方がくっきり映えます</li>
+      <li><strong>小さいドット絵（16×16 程度）</strong> — 点がノイズに見えやすく、ベタ塗り＋陰影の方がくっきり映えます</li>
       <li><strong>顔など情報量が欲しい部分</strong> — ディザでぼかすと締まりがなくなります</li>
     </ul>
     <p><strong>コツ：</strong>広い面に薄く、境目には1段だけ。かけすぎると全体が砂っぽくなります。</p>
     `,
   },
   {
-    id: 'outline', nav: '⑤ Auto Outline', html: `
-    <h2>⑤ Auto Outline</h2>
-    <p>ドット絵の最も効果的なテクニックの一つ：スプライトのシルエットを <strong>1ドットの黒縁取り</strong> で囲むことで、どんな背景色でも読みやすくなります。ゲームスプライトには必須です。</p>
+    id: 'outline', nav: '⑤ 自動縁取り', html: `
+    <h2>⑤ 自動縁取り</h2>
+    <p>ドット絵の最も効果的なテクニックの一つ：ドット絵のシルエットを <strong>1ドットの黒縁取り</strong> で囲むことで、どんな背景色でも読みやすくなります。ゲームのドット絵には必須です。</p>
     <p><strong>操作手順：</strong></p>
     <ol>
-      <li>スプライトを描き終える</li>
+      <li>ドット絵を描き終える</li>
       <li><strong>ENHANCE</strong> パネルで縁取り色を選ぶ（黒 <code>#000000</code> が定番）</li>
-      <li><strong>Auto Outline</strong> をクリック</li>
+      <li><strong>自動縁取り</strong> をクリック</li>
     </ol>
-    <p>透明セルのうち非透明セルに隣接するものが縁取り色で塗られます。<strong>Remove Outline</strong> で他の描画を変えずに縁取りだけを消せます。</p>
+    <p>透明セルのうち非透明セルに隣接するものが縁取り色で塗られます。<strong>縁取りを消す</strong> で他の描画を変えずに縁取りだけを消せます。</p>
     `,
   },
   {
@@ -181,8 +181,8 @@ const SECTIONS = [
       <tr><td><kbd>I</kbd></td><td>スポイト</td></tr>
       <tr><td><kbd>D</kbd></td><td>ディザ</td></tr>
       <tr><td><kbd>S</kbd></td><td>対称トグル</td></tr>
-      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo（60手）</td></tr>
-      <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Redo</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>元に戻す（60手）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>やり直す</td></tr>
     </table>
     <h2 style="margin-top:24px">Tips</h2>
     <ul>
@@ -237,6 +237,6 @@ function scrollTo(id) {
       ></div>
     </div>
 
-    <button id="gclose" @click="ui.guidePageOpen = false">✕ Close</button>
+    <button id="gclose" @click="ui.guidePageOpen = false">✕ 閉じる</button>
   </div>
 </template>

@@ -44,6 +44,6 @@ function onStart(lesson) {
       </div>
     </div>
 
-    <button id="lpage-close" @click="ui.lessonPageOpen = false">✕ Close</button>
+    <button id="lpage-close" @click="ui.lessonPageOpen = false">✕ 閉じる</button>
   </div>
 </template>
