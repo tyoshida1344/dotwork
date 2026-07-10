@@ -90,8 +90,12 @@ npx supabase start   # Docker 上にローカルスタックを起動
 
 1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) で **OAuth 2.0 クライアント ID**（種類: ウェブアプリケーション）を作成する。
 2. **承認済みのリダイレクト URI** に `http://127.0.0.1:54321/auth/v1/callback` を追加する（ローカル Supabase の Auth コールバック）。
-3. 発行されたクライアント ID とシークレットを `.env` の `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` / `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` に設定する。
+3. 発行されたクライアント ID とシークレットを **`.env`**（`.env.local` ではない）の `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` / `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` に設定する。
 4. `npx supabase stop && npx supabase start`（`config.toml` と `.env` を読み直させる）。
+
+> **`.env` と `.env.local` の使い分け**: Supabase CLI が `config.toml` の `env(...)` を解決するために読むのは **`.env` だけ**（`.env.local` は読まない）。一方 Vite は両方読む。したがって `VITE_SUPABASE_*` はどちらでもよいが、**Google の資格情報は `.env` に置く**必要がある。
+>
+> 変数が未設定だと CLI は `env(...)` を**解決せずリテラル文字列のまま**コンテナへ渡すため、ログイン時に `{"error_code":"validation_failed","msg":"Unsupported provider: provider is not enabled"}` になる。反映されたかは `docker exec supabase_auth_dot-editor env | grep GOOGLE` で確認できる（`GOTRUE_EXTERNAL_GOOGLE_ENABLED=true` と、解決済みの client id が出れば成功）。
 
 ログイン後の戻り先は `config.toml` の `site_url`（`http://localhost:5173`＝Vite の開発サーバー）。本番の設定は [OPERATIONS.md](OPERATIONS.md)。
 
