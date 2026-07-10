@@ -498,6 +498,9 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 /* 縁取り色ピッカー */
 .out-col { width: 32px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; }
 
+/* 書き出しパネル：出力サイズの注記 */
+.exp-note { color: var(--muted); font-size: 12px; text-align: center; }
+
 /* ── レッスン：お題パネル（キャンバス横） ──── */
 #carea.lesson-on { gap: 16px; }
 /* お題パネルをキャンバスの右側へ（flex の並び順を入れ替える） */

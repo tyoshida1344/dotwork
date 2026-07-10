@@ -6,6 +6,7 @@ import EnhancePanel    from './panels/EnhancePanel.vue'
 import GuidesPanel     from './panels/GuidesPanel.vue'
 import BackgroundPanel from './panels/BackgroundPanel.vue'
 import RefImagePanel   from './panels/RefImagePanel.vue'
+import ExportPanel     from './panels/ExportPanel.vue'
 </script>
 
 <template>
@@ -19,5 +20,6 @@ import RefImagePanel   from './panels/RefImagePanel.vue'
     <GuidesPanel />
     <BackgroundPanel />
     <RefImagePanel />
+    <ExportPanel />
   </div>
 </template>

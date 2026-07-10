@@ -25,7 +25,7 @@ src/
   views/       ← EditorView（エディタ本体）/ MyPageView（/mypage: 保存した作品の一覧）
                  ＋ AdminView（/admin のシェル: 認証＋ヘッダー）/ AdminHome（管理トップのメニュー）/ LessonAdmin（レッスン管理）
   components/  ← The*（Header/Toolbar/Canvas/Sidebar/StatusBar）、SidePanel、各オーバーレイ（Guide/Lesson/ImageImport）
-    panels/    ← サイドバーの各パネル（Color / Palette / Enhance / Guides / Background / RefImage）
+    panels/    ← サイドバーの各パネル（Color / Palette / Enhance / Guides / Background / RefImage / Export）
     mypage/    ← WorkThumb（作品サムネイルをピクセルから描画）
     admin/     ← AdminLogin / LessonForm
 supabase/migrations/  ← DB マイグレーション（スキーマ・RLS・バケット・RPC・管理者アカウント admins/admin_sessions／既定レッスンのシード／作品 works）

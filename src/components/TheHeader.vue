@@ -3,9 +3,8 @@ import { S } from '../core/state.js'
 import { ui } from '../core/ui.js'
 import { resetCanvas, drawPx } from '../core/canvas.js'
 import { clearAll } from '../core/history.js'
-import { exportPNG } from '../core/export.js'
 import { lessonState } from '../core/lessons.js'
-import { isAuthAvailable, authState, signInWithGoogle, signOut } from '../core/auth.js'
+import { isAuthAvailable, authState, signInWithGoogle } from '../core/auth.js'
 import { worksState, saveWork, stashEditor, clearStash } from '../core/works.js'
 
 const emit = defineEmits(['undo', 'redo'])
@@ -34,13 +33,6 @@ async function onLogin() {
     clearStash()   // 遷移しなかったので、退避したスナップショットは捨てる
     alert(`ログインを開始できませんでした: ${e.message || e}`)
   }
-}
-
-async function onLogout() {
-  await signOut()
-  // ログアウト後はその作品を触れないので、上書き先の紐づけを外す（描いた絵はそのまま残す）
-  worksState.currentId = null
-  worksState.currentTitle = ''
 }
 
 async function onSave(asNew = false) {
@@ -83,8 +75,8 @@ async function onSave(asNew = false) {
       <button title="Ctrl+Z" @click="emit('undo')">↩ Undo</button>
       <button title="Ctrl+Y" @click="emit('redo')">↪ Redo</button>
       <button class="btn-r" @click="onClear">✕ Clear</button>
-      <button class="btn-a" @click="exportPNG">↓ Export PNG</button>
 
+      <!-- PNG 書き出しはサイドバーの EXPORT パネルに置く（「保存」との混同を避けるため） -->
       <!-- ログイン導線は Supabase 設定済みかつセッション確認後にだけ出す（表示のちらつき防止） -->
       <template v-if="isAuthAvailable && authState.ready">
         <template v-if="authState.user">
@@ -100,8 +92,8 @@ async function onSave(asNew = false) {
             title="今の絵を別の作品として保存します"
             @click="onSave(true)"
           >＋ 新規保存</button>
+          <!-- ログアウトはマイページに置く（ヘッダーには出さない） -->
           <router-link class="hbtn" to="/mypage">◱ マイページ</router-link>
-          <button @click="onLogout">ログアウト</button>
         </template>
         <button v-else class="btn-t" @click="onLogin">Google でログイン</button>
       </template>
