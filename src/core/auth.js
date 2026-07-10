@@ -12,7 +12,7 @@ export const isAuthAvailable = !!(import.meta.env.VITE_SUPABASE_URL && import.me
 // （未ログイン表示 → ログイン済み表示 のちらつきを避けるため）。
 export const authState = reactive({
   ready: false,
-  user: null,     // { id, name } | null
+  user: null,     // { id } | null。ログイン済みかの判定にのみ使う
 })
 
 let client = null
@@ -41,13 +41,11 @@ function isAuthRedirect() {
   return /[#&](access_token|error)=/.test(location.hash) || /[?&]code=/.test(location.search)
 }
 
+// 表示名は持たない。Google の名前・メールアドレスは画面に出さない
+// （本名が意図せず表示されるため）。ユーザーが決める表示名は別途プロフィールとして扱う。
 function toUser(session) {
   if (!session?.user) return null
-  const meta = session.user.user_metadata ?? {}
-  return {
-    id: session.user.id,
-    name: meta.name || meta.full_name || session.user.email || 'ユーザー',
-  }
+  return { id: session.user.id }
 }
 
 // 保存済みセッションを復元し、以後の変化（ログイン・ログアウト・トークン更新）を購読する。

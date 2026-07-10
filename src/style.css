@@ -940,7 +940,6 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   font-size: 20px;
   letter-spacing: 1px;
 }
-.mp-user { color: var(--muted); font-size: 13px; margin-top: 4px; }
 .mp-head-actions { display: flex; gap: 8px; align-items: center; }
 
 .mp-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }

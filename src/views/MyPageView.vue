@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { authState, signOut } from '../core/auth.js'
+import { signOut } from '../core/auth.js'
 import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '../core/worksApi.js'
 import { worksState, openWork } from '../core/works.js'
 import { exportPixelsPNG } from '../core/export.js'
@@ -153,7 +153,6 @@ async function onLogout() {
       <header class="mp-head">
         <div class="mp-head-main">
           <span class="mp-logo">MY PAGE</span>
-          <p class="mp-user">{{ authState.user?.name }}</p>
         </div>
         <div class="mp-head-actions">
           <router-link class="hbtn" to="/">← エディタへ戻る</router-link>
