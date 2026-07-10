@@ -43,7 +43,7 @@ async function handleLogout() {
     <div v-if="!configured" class="admin-notice">
       <span class="admin-logo">DOTWORK ADMIN</span>
       <p>Supabase が未設定です。<code>.env</code> に <code>VITE_SUPABASE_URL</code> と <code>VITE_SUPABASE_ANON_KEY</code> を設定してください。</p>
-      <p class="admin-login-note">セットアップ手順: <code>README.md</code> の「レッスン管理（Supabase）」</p>
+      <p class="admin-login-note">セットアップ手順: <code>README.md</code> の「Supabase 連携（レッスン管理・ログイン）」</p>
     </div>
 
     <!-- 未ログイン -->

@@ -1,8 +1,10 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { undo, redo } from '../core/history.js'
-import { drawPx } from '../core/canvas.js'
+import { drawPx, resize } from '../core/canvas.js'
 import { S } from '../core/state.js'
+import { ensureAuth } from '../core/auth.js'
+import { restoreStashedEditor } from '../core/works.js'
 
 import TheHeader    from '../components/TheHeader.vue'
 import TheToolbar   from '../components/TheToolbar.vue'
@@ -30,7 +32,13 @@ function onKeydown(e) {
 function handleUndo() { if (undo()) drawPx() }
 function handleRedo() { if (redo()) drawPx() }
 
-onMounted(()   => document.addEventListener('keydown', onKeydown))
+onMounted(async () => {
+  document.addEventListener('keydown', onKeydown)
+  // ログイン状態の確認と、OAuth から戻ってきた場合のキャンバス復元。
+  // 子（TheCanvas）のマウントは済んでいるのでコンテキストは初期化済み。
+  ensureAuth()
+  if (await restoreStashedEditor()) resize()
+})
 onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 </script>
 

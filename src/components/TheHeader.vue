@@ -3,8 +3,9 @@ import { S } from '../core/state.js'
 import { ui } from '../core/ui.js'
 import { resetCanvas, drawPx } from '../core/canvas.js'
 import { clearAll } from '../core/history.js'
-import { exportPNG } from '../core/export.js'
 import { lessonState } from '../core/lessons.js'
+import { isAuthAvailable, authState, signInWithGoogle } from '../core/auth.js'
+import { worksState, saveWork, stashEditor, clearStash } from '../core/works.js'
 
 const emit = defineEmits(['undo', 'redo'])
 
@@ -20,6 +21,27 @@ function onClear() {
   if (!confirm('キャンバスを消去しますか？')) return
   clearAll()
   drawPx()
+}
+
+// Google の認可画面へ出る前に、編集中のキャンバスを退避しておく
+// （リダイレクトでページごと捨てられるため）。戻り先で EditorView が復元する。
+async function onLogin() {
+  stashEditor()
+  try {
+    await signInWithGoogle()
+  } catch (e) {
+    clearStash()   // 遷移しなかったので、退避したスナップショットは捨てる
+    alert(`ログインを開始できませんでした: ${e.message || e}`)
+  }
+}
+
+async function onSave(asNew = false) {
+  try {
+    const w = await saveWork({ asNew })
+    alert(`「${w.title}」を保存しました。`)
+  } catch (e) {
+    alert(e.message || e)
+  }
 }
 </script>
 
@@ -53,7 +75,28 @@ function onClear() {
       <button title="Ctrl+Z" @click="emit('undo')">↩ Undo</button>
       <button title="Ctrl+Y" @click="emit('redo')">↪ Redo</button>
       <button class="btn-r" @click="onClear">✕ Clear</button>
-      <button class="btn-a" @click="exportPNG">↓ Export PNG</button>
+
+      <!-- PNG 書き出しはサイドバーの EXPORT パネルに置く（「保存」との混同を避けるため） -->
+      <!-- ログイン導線は Supabase 設定済みかつセッション確認後にだけ出す（表示のちらつき防止） -->
+      <template v-if="isAuthAvailable && authState.ready">
+        <template v-if="authState.user">
+          <button
+            class="btn-a"
+            :disabled="worksState.saving"
+            :title="worksState.currentId != null ? `「${worksState.currentTitle}」に上書き保存します` : '新しい作品として保存します'"
+            @click="onSave(false)"
+          >{{ worksState.saving ? '保存中…' : '✓ 保存' }}</button>
+          <button
+            v-if="worksState.currentId != null"
+            :disabled="worksState.saving"
+            title="今の絵を別の作品として保存します"
+            @click="onSave(true)"
+          >＋ 新規保存</button>
+          <!-- ログアウトはマイページに置く（ヘッダーには出さない） -->
+          <router-link class="hbtn" to="/mypage">◱ マイページ</router-link>
+        </template>
+        <button v-else class="btn-t" @click="onLogin">Google でログイン</button>
+      </template>
     </div>
   </header>
 </template>

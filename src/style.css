@@ -101,6 +101,21 @@ button:disabled:hover { border-color: var(--border); color: var(--text); backgro
 .hlbl { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .spc  { flex: 1; }
 
+/* router-link をボタンの見た目に揃える（ヘッダー／マイページ） */
+.hbtn {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  padding: 4px 9px;
+  border-radius: 3px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hbtn:hover { border-color: var(--amber); color: var(--amber); }
+
 /* ── ツールバー ───────────────────────────── */
 #tbar {
   grid-area: tbar;
@@ -483,6 +498,9 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 /* 縁取り色ピッカー */
 .out-col { width: 32px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; }
 
+/* 書き出しパネル：出力サイズの注記 */
+.exp-note { color: var(--muted); font-size: 12px; text-align: center; }
+
 /* ── レッスン：お題パネル（キャンバス横） ──── */
 #carea.lesson-on { gap: 16px; }
 /* お題パネルをキャンバスの右側へ（flex の並び順を入れ替える） */
@@ -759,7 +777,7 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   text-decoration: none;   /* ヘッダーではロゴを管理トップへのリンクにするため */
 }
 .admin-login-note { color: var(--muted); font-size: 13px; line-height: 1.7; }
-.admin-error {
+.admin-error, .mp-error {
   color: #dc2626;
   font-size: 13px;
   background: #fef2f2;
@@ -905,3 +923,86 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 .lf-preview { background: var(--bg); border-left: 1px solid var(--border); padding: 20px; }
 .lf-preview-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 10px; }
 .lf-noimg { color: var(--muted); font-size: 13px; padding: 40px 0; }
+
+/* ── マイページ（/mypage） ───────────────────── */
+#mypage {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  overflow-y: auto;
+  color: var(--text);
+}
+.mp-inner { max-width: 920px; margin: 0 auto; padding: 28px 22px 60px; }
+.mp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.mp-logo {
+  font-family: 'Silkscreen', monospace;
+  color: var(--amber);
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+.mp-head-actions { display: flex; gap: 8px; align-items: center; }
+
+.mp-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.mp-count { font-size: 13px; color: var(--muted); }
+.mp-count.full { color: var(--amber); }
+.mp-note { color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+.mp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+/* ⋯ メニューをカード外へはみ出させるため overflow は切らない。
+   角丸はサムネイル側で受け持つ（カードの上端に接しているため）。 */
+.work-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.work-thumb {
+  background: repeating-conic-gradient(#cdd1d6 0% 25%, #f3f4f6 0% 50%) 0 / 16px 16px;
+  padding: 16px;
+  border-radius: 7px 7px 0 0;
+}
+/* サムネイルは作品のピクセル数と同じサイズの canvas。拡大してもドットを保つ */
+.work-thumb-cv { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.work-body { padding: 12px 13px 13px; display: flex; flex-direction: column; flex: 1; }
+.work-title { font-size: 15px; color: var(--text); word-break: break-word; }
+.work-meta { font-size: 12px; color: var(--muted); margin-top: 5px; }
+.work-date { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 11px; }
+.work-actions { display: flex; align-items: center; gap: 6px; margin-top: auto; }
+.work-actions button { font-size: 13px; padding: 4px 8px; }
+.work-edit { flex: 1; }
+
+/* ⋯ ドロップダウン */
+.work-menu { position: relative; flex-shrink: 0; }
+.work-menu-btn { line-height: 1; padding: 4px 9px; }
+.work-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 172px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  /* カードは position 指定を持たないので、positioned なこの要素が後続カードより前面に来る */
+  z-index: 5;
+}
+.work-menu-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 9px;
+}
+.work-menu-list button:hover:not(:disabled) { background: var(--bg3); color: var(--amber); }
+.work-menu-sep { height: 1px; background: var(--border); margin: 4px 2px; }
+.work-menu-danger { color: #dc2626; }
+.work-menu-danger:hover:not(:disabled) { background: #fef2f2; color: #dc2626; }

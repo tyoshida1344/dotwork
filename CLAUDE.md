@@ -17,17 +17,20 @@
 
 ```
 src/
-  main.js / App.vue / router.js  ← エントリ、<router-view>、ルート定義（/ と /admin＋子ルート、/admin は遅延ロード・直リンクのみ）
+  main.js / App.vue / router.js  ← エントリ、<router-view>、ルート定義（/ と /mypage と /admin＋子ルート。/mypage・/admin は遅延ロード、/admin は直リンクのみ）
   style.css                      ← グローバル CSS（:root に CSS 変数）
   core/        ← 状態とロジック（Vanilla JS）: state / palette / canvas / tools / history / export / ui
                  ＋ レッスン管理まわり: lessons / supabase / lessonsApi
-  views/       ← EditorView（エディタ本体）/ AdminView（/admin のシェル: 認証＋ヘッダー）
-                 ＋ AdminHome（管理トップのメニュー）/ LessonAdmin（レッスン管理）
+                 ＋ 学習者アカウントと作品: auth / works / worksApi
+  views/       ← EditorView（エディタ本体）/ MyPageView（/mypage: 保存した作品の一覧）
+                 ＋ AdminView（/admin のシェル: 認証＋ヘッダー）/ AdminHome（管理トップのメニュー）/ LessonAdmin（レッスン管理）
   components/  ← The*（Header/Toolbar/Canvas/Sidebar/StatusBar）、SidePanel、各オーバーレイ（Guide/Lesson/ImageImport）
-    panels/    ← サイドバーの各パネル（Color / Palette / Enhance / Guides / Background / RefImage）
+    panels/    ← サイドバーの各パネル（Color / Palette / Enhance / Guides / Background / RefImage / Export）
+    mypage/    ← WorkThumb（作品サムネイルをピクセルから描画）
     admin/     ← AdminLogin / LessonForm
-supabase/migrations/  ← DB マイグレーション（スキーマ・RLS・バケット・RPC・管理者アカウント admins/admin_sessions／既定レッスンのシード）
+supabase/migrations/  ← DB マイグレーション（スキーマ・RLS・バケット・RPC・管理者アカウント admins/admin_sessions／既定レッスンのシード／作品 works）
 supabase/functions/   ← Edge Function（admin: 管理者認証・レッスン/お題画像の書き込み。service_role）
+supabase/config.toml  ← ローカルスタック設定（[auth.external.google] を含む。本番には反映されない）
 .env.example         ← Supabase 接続情報テンプレート
 ```
 
@@ -43,7 +46,7 @@ supabase/functions/   ← Edge Function（admin: 管理者認証・レッスン/
 
 ### ルーティングとレッスン管理（router.js / lessons.js / lessonsApi.js / supabase.js）
 
-`vue-router`（history モード）。`/` = `EditorView`（エディタ本体）。`/admin` = `AdminView`（遅延ロード）で、これは **DOTWORK ADMIN の「シェル」**（Supabase 設定チェック・ログイン・共通ヘッダー・ログアウト）。管理機能そのものは子ルートに分離する: `/admin`（index）= `AdminHome`（管理トップのメニュー）、`/admin/lessons` = `LessonAdmin`（レッスン管理）。今後の管理機能は子ルート＋`AdminHome` のメニュー項目として足す。`/admin` は UI 上の導線を置かず**直リンクのみ**で到達し、エディタへ戻る導線も持たない。`App.vue` は `<router-view>` だけ。SPA フォールバックは `netlify.toml` の redirect で対応。
+`vue-router`（history モード）。`/` = `EditorView`（エディタ本体）。`/mypage` = `MyPageView`（遅延ロード・ログイン必須。`beforeEnter` が未ログインならエディタへ戻す）。`/admin` = `AdminView`（遅延ロード）で、これは **DOTWORK ADMIN の「シェル」**（Supabase 設定チェック・ログイン・共通ヘッダー・ログアウト）。管理機能そのものは子ルートに分離する: `/admin`（index）= `AdminHome`（管理トップのメニュー）、`/admin/lessons` = `LessonAdmin`（レッスン管理）。今後の管理機能は子ルート＋`AdminHome` のメニュー項目として足す。`/admin` は UI 上の導線を置かず**直リンクのみ**で到達し、エディタへ戻る導線も持たない。`App.vue` は `<router-view>` だけ。SPA フォールバックは `netlify.toml` の redirect で対応。
 
 レッスンの正データは **Supabase**（`lessons` テーブル＋公開バケット `lesson-refs`）。`supabase.js` は env（`VITE_SUPABASE_*`）から anon クライアントを作り、未設定なら `null`。`lessonsApi.js` は、**読み取り**（`fetchLessons`）を anon で直接行い、**書き込み・お題画像・認証**は Edge Function `admin` 経由で行う。DB 列（`id`/`description`/`deleted_at`…）とフロントの形（`id`/`desc`…）を相互変換する。レッスンの削除は物理削除ではなく `deleted_at` を立てる**論理削除**で、一覧は `deleted_at is null` のみ取得する。
 
@@ -56,6 +59,20 @@ supabase/functions/   ← Edge Function（admin: 管理者認証・レッスン/
 管理者は **Supabase Auth と切り離した独自アカウント**。`admins` テーブル（`login_id`＋bcrypt ハッシュの `password`）＋`admin_sessions`（トークンは sha256 ハッシュで保存）で認証する。ログイン・書き込み・お題画像は Edge Function `supabase/functions/admin`（**service_role**）が担い、クライアント（anon）は `x-admin-token` を送るだけ。RLS は `lessons`/バケットとも**書き込みをクライアントから禁止**し（service_role のみ）、読み取りは全員。これは学習者アカウント（Supabase Auth／将来 Google）を管理者と**完全分離**するため。管理者の作成・パス変更は DB 操作（Studio / SQL、`admin_hash_password()`）で行う。`admin` 関数は独自トークン認証のため `config.toml` で `verify_jwt = false`。
 
 総当たり対策として、`admin_login` は **IP 単位のログイン失敗スロットリング**を行う（`admin_login_attempts` テーブルに IP ごとの失敗回数を記録し、指数バックオフ＝再試行間隔を `2^(失敗回数-1)` 秒に広げ、5回失敗で1時間ロック。成功でクリア）。IP は Edge Function が `x-forwarded-for` から取り出して RPC に渡す。戻り値は `jsonb`（`{status: ok|invalid|locked, token?, retry_after?}`）で、`locked` は関数が `429 + Retry-After` に変換する。CORS は `*` を使わず、環境変数 `ALLOWED_ORIGINS`（カンマ区切り・未設定時はローカル開発オリジンのみ）に載る Origin だけをエコーする。
+
+### 学習者アカウントと作品（auth.js / works.js / worksApi.js）
+
+学習者は **Supabase Auth の Google OAuth** でログインする（管理者の独自トークン認証とは別系統）。作品は本人しか読み書きしないため、レッスンと違い **Edge Function を通さず、`auth.uid()` ベースの RLS でクライアントから直接** `works` テーブルを読み書きする。
+
+`auth.js` はログイン状態（`authState.ready` / `authState.user`）と Google サインイン／アウトを持つ。`lessons.js` と同じく `supabase.js` を**動的 import** し、さらに **ログインの形跡が無いうちは読み込まない**（`localStorage` の `sb-*-auth-token` の有無と、OAuth から戻った URL かどうかで判定する）。未ログインの利用者に `@supabase/supabase-js` のチャンクを取らせないため。`authState.ready` になるまでヘッダーはログイン導線を出さない（表示のちらつき防止）。
+
+OAuth はリダイレクトでページごと捨てるため、`ログイン` を押す前に `works.js` の `stashEditor()` で編集中のキャンバスを `sessionStorage` へ退避し、戻ってきた `EditorView` の `onMounted` が `restoreStashedEditor()` で復元する。
+
+`works.js` はエディタと作品の橋渡し（`supabase` を静的 import しない）。`snapshotEditor()` / `applySnapshot()` が「保存する状態」の唯一の定義で、保存・OAuth 退避・作品を開く の全てがこれを通る。保存対象は**ピクセル・サイズ・パレット・補助線・レッスン紐づけ**のみ（背景色・選択色・参照画像・ズーム・アンドゥ履歴は含めない）。`applySnapshot()` は描画を呼ばない（マイページから開く時点ではキャンバスが未マウントのため。再描画は呼び出し元 or `TheCanvas` の `onMounted`）。レッスンに紐づく作品を開くとレッスンモードごと復元し、そのレッスンが非公開になっていたら通常モードで開く。
+
+`worksApi.js` は `works` の CRUD（DB 列 `head_units`/`v_div_units` ⇄ フロント `headUnits`/`vDivUnits` を相互変換）。レッスンの論理削除と違い、**作品は物理削除**する（上限のカウントがその場で戻るように）。サムネイル画像は保存せず、`WorkThumb` がピクセル配列から等倍の canvas に描いて CSS で引き伸ばす。
+
+保持できる作品数の上限は **20 件**。強制するのは DB のトリガー `works_enforce_limit()`（`P0001` を投げ、そのメッセージをそのまま画面に出す）で、`worksApi.js` の `WORK_LIMIT` は保存前に弾いて理由を伝えるためのもの。**両者の値は必ず一致させること。** 上限は新規作成にだけ効き、既存作品への上書きは常に可能。
 
 ### 3層キャンバス（canvas.js）
 
