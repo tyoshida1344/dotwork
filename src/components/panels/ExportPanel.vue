@@ -13,7 +13,7 @@ const SCALE = 16
     title="EXPORT"
     tooltip="キャンバスを PNG ファイルとしてダウンロードします。背景色・補助線・参照画像は含まれません（背景は常に透過）。アカウントへ保存する「保存」とは別の操作です。"
   >
-    <button class="abtn btn-a" @click="exportPNG">↓ PNG を書き出す</button>
+    <button class="abtn btn-a" @click="exportPNG">⤓ PNG を書き出す</button>
     <p class="exp-note">{{ S.cols * SCALE }}×{{ S.rows * SCALE }} px ・ 背景透過</p>
   </SidePanel>
 </template>

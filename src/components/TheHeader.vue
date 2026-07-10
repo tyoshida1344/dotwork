@@ -85,7 +85,7 @@ async function onSave(asNew = false) {
             :disabled="worksState.saving"
             :title="worksState.currentId != null ? `「${worksState.currentTitle}」に上書き保存します` : '新しい作品として保存します'"
             @click="onSave(false)"
-          >{{ worksState.saving ? '保存中…' : '⤓ 保存' }}</button>
+          >{{ worksState.saving ? '保存中…' : '✓ 保存' }}</button>
           <button
             v-if="worksState.currentId != null"
             :disabled="worksState.saving"
