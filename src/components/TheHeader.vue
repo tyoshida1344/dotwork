@@ -95,7 +95,7 @@ async function onSave(asNew = false) {
           <!-- ログアウトはマイページに置く（ヘッダーには出さない） -->
           <router-link class="hbtn" to="/mypage">◱ マイページ</router-link>
         </template>
-        <button v-else class="btn-t" @click="onLogin">Google でログイン</button>
+        <button v-else class="btn-t" @click="onLogin">ログイン</button>
       </template>
     </div>
   </header>
