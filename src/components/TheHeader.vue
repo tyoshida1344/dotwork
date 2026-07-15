@@ -18,7 +18,7 @@ function onSizeChange(e) {
 }
 
 function onClear() {
-  if (!confirm('キャンバスを消去しますか？')) return
+  if (!confirm('キャンバスを消去しますか？描いた内容はすべて消えます。')) return
   clearAll()
   drawPx()
 }
@@ -72,9 +72,9 @@ async function onSave(asNew = false) {
       <button class="btn-t mobile-only" title="パネルを開く" @click="ui.panelOpen = true">☰ パネル</button>
       <button class="btn-t" @click="ui.lessonPageOpen = true">▦ レッスン</button>
       <button class="btn-t" @click="ui.guidePageOpen = true">? ガイド</button>
-      <button title="Ctrl+Z" @click="emit('undo')">↩ Undo</button>
-      <button title="Ctrl+Y" @click="emit('redo')">↪ Redo</button>
-      <button class="btn-r" @click="onClear">✕ Clear</button>
+      <button title="Ctrl+Z" @click="emit('undo')">↩ 元に戻す</button>
+      <button title="Ctrl+Y" @click="emit('redo')">↪ やり直す</button>
+      <button class="btn-r" @click="onClear">✕ クリア</button>
 
       <!-- PNG 書き出しはサイドバーの EXPORT パネルに置く（「保存」との混同を避けるため） -->
       <!-- ログイン導線は Supabase 設定済みかつセッション確認後にだけ出す（表示のちらつき防止） -->
@@ -95,7 +95,7 @@ async function onSave(asNew = false) {
           <!-- ログアウトはマイページに置く（ヘッダーには出さない） -->
           <router-link class="hbtn" to="/mypage">◱ マイページ</router-link>
         </template>
-        <button v-else class="btn-t" @click="onLogin">Google でログイン</button>
+        <button v-else class="btn-t" @click="onLogin">ログイン</button>
       </template>
     </div>
   </header>

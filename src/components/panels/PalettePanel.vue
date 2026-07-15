@@ -18,13 +18,13 @@ function onPalChange(e) {
 </script>
 
 <template>
-  <SidePanel title="PALETTE" tooltip="アクティブなカラーセット。ヘッダーのドロップダウンで変更。クリックで選択。">
+  <SidePanel title="PALETTE" tooltip="アクティブなパレット。ヘッダーのドロップダウンで変更。クリックで選択。">
     <div style="margin-bottom:6px">
       <select
         style="width:100%"
         :value="ui.palKey"
         :disabled="!!lessonState.active"
-        :title="lessonState.active ? 'レッスン中は色セットが固定されます' : ''"
+        :title="lessonState.active ? 'レッスン中はパレットが固定されます' : ''"
         @change="onPalChange"
       >
         <option v-if="ui.palKey === 'lesson'" value="lesson">レッスンの色</option>

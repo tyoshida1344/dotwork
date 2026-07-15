@@ -64,10 +64,10 @@ function formatDate(iso) {
   })
 }
 
-// ファイル名に使えない文字を落とす（空になったら sprite）
+// ファイル名に使えない文字を落とす（空になったら dotwork）
 function toFilename(title) {
   const s = title.replace(/[\\/:*?"<>|]/g, '').trim()
-  return `${s || 'sprite'}.png`
+  return `${s || 'dotwork'}.png`
 }
 
 async function onEdit(w) {
@@ -85,7 +85,7 @@ async function onRename(w) {
   if (title == null) return
   const t = title.trim()
   if (!t) { alert('タイトルを入力してください。'); return }
-  if (t.length > 60) { alert('タイトルは60文字までです。'); return }
+  if (t.length > 60) { alert('タイトルは60文字までです。短くしてください。'); return }
   if (t === w.title) return
 
   busyId.value = w.id

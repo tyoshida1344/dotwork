@@ -2,7 +2,7 @@ import { S } from './state.js'
 
 // ピクセル配列を PNG にしてダウンロードする。エディタ（現在のキャンバス）と
 // マイページ（保存済みの作品）で共用する。背景色・補助線は含めない。
-export function exportPixelsPNG(pixels, cols, rows, filename = 'sprite.png') {
+export function exportPixelsPNG(pixels, cols, rows, filename = 'dotwork.png') {
   const scale = 16
   const ec = document.createElement('canvas')
   ec.width = cols * scale; ec.height = rows * scale
