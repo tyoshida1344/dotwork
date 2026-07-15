@@ -1,10 +1,13 @@
 import { S } from './state.js'
 import { ui } from './ui.js'
 
+// 未保存・タイトル空時の既定ファイル名（文言規約: README / ui-copy.md）
+const DEFAULT_FILENAME = 'dotwork.png'
+
 // ピクセル配列を PNG にしてダウンロードする。エディタ（現在のキャンバス）と
 // マイページ（保存済みの作品）で共用する。scale はドット1マスの出力ピクセル数。
 // 背景色・補助線は含めない。
-export function exportPixelsPNG(pixels, cols, rows, filename = 'dotwork.png', scale = 1) {
+export function exportPixelsPNG(pixels, cols, rows, filename = DEFAULT_FILENAME, scale = 1) {
   const ec = document.createElement('canvas')
   ec.width = cols * scale; ec.height = rows * scale
   const ex = ec.getContext('2d')
@@ -20,5 +23,5 @@ export function exportPixelsPNG(pixels, cols, rows, filename = 'dotwork.png', sc
 }
 
 export function exportPNG() {
-  exportPixelsPNG(S.pixels, S.cols, S.rows, 'dotwork.png', ui.exportScale)
+  exportPixelsPNG(S.pixels, S.cols, S.rows, DEFAULT_FILENAME, ui.exportScale)
 }

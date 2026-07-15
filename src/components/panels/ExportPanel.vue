@@ -4,8 +4,7 @@ import { ui, EXPORT_SCALES, setExportScale } from '../../core/ui.js'
 import { exportPNG } from '../../core/export.js'
 import SidePanel from '../SidePanel.vue'
 
-// 書き出し倍率は EXPORT パネルで選べる（ui.exportScale）。ヘッダーの「保存」（＝アカウントへ
-// 作品を保存）と紛らわしかったため、ファイル出力はこのパネルに分けている。
+// 書き出し倍率は EXPORT パネルで選べる（ui.exportScale）。ファイル出力はヘッダーの「保存」（＝アカウントへ作品を保存）と紛らわしいため、このパネルに分けている。
 </script>
 
 <template>
