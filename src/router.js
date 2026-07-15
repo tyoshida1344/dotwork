@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import EditorView from './views/EditorView.vue'
-import { ensureAuth, authState } from './core/auth.js'
+import EditorView from '~/views/EditorView.vue'
+import { ensureAuth, authState } from '~/core/auth.js'
 
 // / = エディタ本体、/mypage = 保存した作品の一覧（学習者）、/admin = 管理画面（DOTWORK ADMIN）。
 // /admin は UI 上の導線を置かず直リンクのみ。

@@ -1,12 +1,12 @@
 <script setup>
-import { ui } from '../core/ui.js'
-import ColorPanel      from './panels/ColorPanel.vue'
-import PalettePanel    from './panels/PalettePanel.vue'
-import EnhancePanel    from './panels/EnhancePanel.vue'
-import GuidesPanel     from './panels/GuidesPanel.vue'
-import BackgroundPanel from './panels/BackgroundPanel.vue'
-import RefImagePanel   from './panels/RefImagePanel.vue'
-import ExportPanel     from './panels/ExportPanel.vue'
+import { ui } from '~/core/ui.js'
+import ColorPanel      from '~/components/organisms/ColorPanel.vue'
+import PalettePanel    from '~/components/organisms/PalettePanel.vue'
+import EnhancePanel    from '~/components/organisms/EnhancePanel.vue'
+import GuidesPanel     from '~/components/organisms/GuidesPanel.vue'
+import BackgroundPanel from '~/components/organisms/BackgroundPanel.vue'
+import RefImagePanel   from '~/components/organisms/RefImagePanel.vue'
+import ExportPanel     from '~/components/organisms/ExportPanel.vue'
 </script>
 
 <template>

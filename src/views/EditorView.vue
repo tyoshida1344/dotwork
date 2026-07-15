@@ -1,19 +1,19 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
-import { undo, redo } from '../core/history.js'
-import { drawPx, resize } from '../core/canvas.js'
-import { S } from '../core/state.js'
-import { ensureAuth } from '../core/auth.js'
-import { restoreStashedEditor } from '../core/works.js'
+import { undo, redo } from '~/core/history.js'
+import { drawPx, resize } from '~/core/canvas.js'
+import { S } from '~/core/state.js'
+import { ensureAuth } from '~/core/auth.js'
+import { restoreStashedEditor } from '~/core/works.js'
 
-import TheHeader    from '../components/TheHeader.vue'
-import TheToolbar   from '../components/TheToolbar.vue'
-import TheCanvas    from '../components/TheCanvas.vue'
-import TheSidebar   from '../components/TheSidebar.vue'
-import TheStatusBar from '../components/TheStatusBar.vue'
-import GuidePage    from '../components/GuidePage.vue'
-import ImageImportModal from '../components/ImageImportModal.vue'
-import LessonPage    from '../components/LessonPage.vue'
+import TheHeader    from '~/components/organisms/TheHeader.vue'
+import TheToolbar   from '~/components/organisms/TheToolbar.vue'
+import TheCanvas    from '~/components/organisms/TheCanvas.vue'
+import TheSidebar   from '~/components/organisms/TheSidebar.vue'
+import TheStatusBar from '~/components/organisms/TheStatusBar.vue'
+import GuidePage    from '~/components/organisms/GuidePage.vue'
+import ImageImportModal from '~/components/organisms/ImageImportModal.vue'
+import LessonPage    from '~/components/organisms/LessonPage.vue'
 
 const TOOL_KEYS = { B:'pencil', E:'eraser', L:'line', G:'bucket', I:'picker', D:'dither' }
 

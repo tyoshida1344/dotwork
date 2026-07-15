@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { S } from '../core/state.js'
-import { ui, toggleLessonAsideSide } from '../core/ui.js'
-import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoomCanvas, drawBg } from '../core/canvas.js'
-import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '../core/tools.js'
-import { saveUndo } from '../core/history.js'
-import { lessonState, exitLesson, setLessonOverlay } from '../core/lessons.js'
+import { S } from '~/core/state.js'
+import { ui, toggleLessonAsideSide } from '~/core/ui.js'
+import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoomCanvas, drawBg } from '~/core/canvas.js'
+import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '~/core/tools.js'
+import { saveUndo } from '~/core/history.js'
+import { lessonState, exitLesson, setLessonOverlay } from '~/core/lessons.js'
 
 const bgcvEl   = ref(null)
 const cvEl     = ref(null)

@@ -7,6 +7,10 @@
 ローカル開発・利用は `README.md`、本番運用（Netlify デプロイ・Supabase 本番・マイグレーション適用）は `OPERATIONS.md`、マイグレーションの作法は `supabase/migrations/README.md`。
 変更後の検証は `npm run build`（このリポジトリにテスト／Lint の設定は無い）。
 
+## コーディング規約
+
+- **import は `~`（= `src`）エイリアスで書く。`./`・`../` などの相対パスは原則使わない**（設定は `vite.config.js` / `jsconfig.json`）。例: `import SidePanel from '~/components/molecules/SidePanel.vue'`。
+
 ## プロジェクト概要
 
 **DOTWORK** — 初心者向けのドット絵エディタ。設計思想は「選択肢を絞り、陰影・縁取り・ディザリングを自動化する」こと（実装判断の前提。製品紹介・機能一覧は `README.md`）。技術スタックは **Vite + Vue 3（Composition API / `<script setup>`）** ＋ Vanilla JS コアモジュール。

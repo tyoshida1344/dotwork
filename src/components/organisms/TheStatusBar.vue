@@ -1,7 +1,7 @@
 <script setup>
-import { S } from '../core/state.js'
-import { ui } from '../core/ui.js'
-import { zoomCanvas } from '../core/canvas.js'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
+import { zoomCanvas } from '~/core/canvas.js'
 
 const TOOL_NAMES = {
   pencil: 'ペン', eraser: '消しゴム', line: '直線',

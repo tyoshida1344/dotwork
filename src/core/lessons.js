@@ -1,8 +1,8 @@
 import { reactive } from 'vue'
-import { S } from './state.js'
-import { ui } from './ui.js'
-import { resize, drawPx } from './canvas.js'
-import { clearHistory } from './history.js'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
+import { resize, drawPx } from '~/core/canvas.js'
+import { clearHistory } from '~/core/history.js'
 
 // Supabase が設定されているか（env のみで判定）。
 // ここでは supabase.js を静的 import しない。@supabase/supabase-js を

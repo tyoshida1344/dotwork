@@ -1,5 +1,5 @@
-import { S } from './state.js'
-import { ui } from './ui.js'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
 
 // 未保存・タイトル空時の既定ファイル名（文言規約: README / ui-copy.md）
 const DEFAULT_FILENAME = 'dotwork.png'

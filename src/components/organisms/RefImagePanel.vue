@@ -1,10 +1,10 @@
 <script setup>
-import { S } from '../../core/state.js'
-import { ui } from '../../core/ui.js'
-import { drawPx } from '../../core/canvas.js'
-import { extractPaletteFromImage } from '../../core/palette.js'
-import { lessonState } from '../../core/lessons.js'
-import SidePanel from '../SidePanel.vue'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
+import { drawPx } from '~/core/canvas.js'
+import { extractPaletteFromImage } from '~/core/palette.js'
+import { lessonState } from '~/core/lessons.js'
+import SidePanel from '~/components/molecules/SidePanel.vue'
 import { ref } from 'vue'
 
 const fileInput = ref(null)

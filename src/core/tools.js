@@ -1,5 +1,5 @@
-import { S } from './state.js'
-import { saveUndo } from './history.js'
+import { S } from '~/core/state.js'
+import { saveUndo } from '~/core/history.js'
 
 export function idx(x, y) { return y * S.cols + x }
 export function inB(x, y) { return x >= 0 && x < S.cols && y >= 0 && y < S.rows }

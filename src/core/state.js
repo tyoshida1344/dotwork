@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { PAL } from './palette.js'
+import { PAL } from '~/core/palette.js'
 
 const SIZE_KEY = 'dotwork.canvasSize'
 const SIZES = [16, 24, 32, 48]   // SIZE セレクトの選択肢と一致させる

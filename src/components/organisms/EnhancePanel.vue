@@ -1,8 +1,8 @@
 <script setup>
-import { S } from '../../core/state.js'
-import { drawPx } from '../../core/canvas.js'
-import { autoOutline, removeOutline } from '../../core/tools.js'
-import SidePanel from '../SidePanel.vue'
+import { S } from '~/core/state.js'
+import { drawPx } from '~/core/canvas.js'
+import { autoOutline, removeOutline } from '~/core/tools.js'
+import SidePanel from '~/components/molecules/SidePanel.vue'
 
 function onAutoOutline() { autoOutline(); drawPx() }
 function onRemoveOutline() { removeOutline(); drawPx() }

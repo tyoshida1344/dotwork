@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { isSupabaseConfigured } from '../core/supabase.js'
-import { signIn, signOut, getSession } from '../core/lessonsApi.js'
-import AdminLogin from '../components/admin/AdminLogin.vue'
+import { isSupabaseConfigured } from '~/core/supabase.js'
+import { signIn, signOut, getSession } from '~/core/lessonsApi.js'
+import AdminLogin from '~/components/organisms/AdminLogin.vue'
 
 // /admin のシェル：Supabase 設定チェック・ログイン・共通ヘッダー・ログアウトを担い、
 // 各管理機能（レッスン管理など）は子ルート（<router-view>）に表示する。

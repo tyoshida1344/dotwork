@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js'
+import { supabase } from '~/core/supabase.js'
 
 // レッスンの読み取りは anon で直接（公開）。認証・書き込み・お題画像は Edge Function（admin）経由。
 // 管理者は独自アカウント（admins テーブル）＋セッショントークンで認証する（Supabase Auth は使わない）。
