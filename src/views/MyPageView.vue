@@ -5,6 +5,7 @@ import { signOut } from '../core/auth.js'
 import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '../core/worksApi.js'
 import { worksState, openWork } from '../core/works.js'
 import { exportPixelsPNG } from '../core/export.js'
+import { EXPORT_SCALES } from '../core/ui.js'
 import { ensureLessons } from '../core/lessons.js'
 import WorkThumb from '../components/mypage/WorkThumb.vue'
 
@@ -17,6 +18,7 @@ const loading = ref(true)
 const error = ref('')
 const busyId = ref(null)              // 操作中の作品 id（そのカードのボタンだけ止める）
 const openMenuId = ref(null)          // ⋯ メニューを開いている作品 id（同時に開くのは1つ）
+const exportScale = ref(1)            // 書き出し倍率（マイページ内で共有・エディタとは別・保持しない）
 
 const full = computed(() => works.value.length >= WORK_LIMIT)
 
@@ -118,7 +120,7 @@ async function onDuplicate(w) {
 }
 
 function onExport(w) {
-  exportPixelsPNG(w.pixels, w.cols, w.rows, toFilename(w.title))
+  exportPixelsPNG(w.pixels, w.cols, w.rows, toFilename(w.title), exportScale.value)
 }
 
 async function onDelete(w) {
@@ -208,7 +210,16 @@ async function onLogout() {
                       :title="full ? '上限に達しています' : ''"
                       @click="pick(onDuplicate, w)"
                     >複製</button>
-                    <button role="menuitem" @click="pick(onExport, w)">⤓ PNG を書き出す</button>
+                    <div class="work-menu-export">
+                      <button role="menuitem" @click="pick(onExport, w)">⤓ PNG を書き出す</button>
+                      <select
+                        title="書き出し倍率"
+                        :value="String(exportScale)"
+                        @change="exportScale = Number($event.target.value)"
+                      >
+                        <option v-for="s in EXPORT_SCALES" :key="s" :value="String(s)">{{ s }}x</option>
+                      </select>
+                    </div>
                     <div class="work-menu-sep"></div>
                     <button role="menuitem" class="work-menu-danger" @click="pick(onDelete, w)">削除</button>
                   </div>

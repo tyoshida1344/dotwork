@@ -4,6 +4,19 @@ import { reactive } from 'vue'
 const ASIDE_SIDE_KEY = 'dotwork.lessonAsideSide'
 const savedAsideSide = localStorage.getItem(ASIDE_SIDE_KEY) === 'right' ? 'right' : 'left'
 
+// PNG 書き出しの倍率。EXPORT パネルの選択肢と一致させること。
+export const EXPORT_SCALES = [1, 2, 4, 8, 16]
+const EXPORT_SCALE_KEY = 'dotwork.exportScale'
+
+// 前回選択した書き出し倍率を localStorage から復元（未保存・無効値なら 1）
+function loadExportScale() {
+  try {
+    const n = parseInt(localStorage.getItem(EXPORT_SCALE_KEY), 10)
+    if (EXPORT_SCALES.includes(n)) return n
+  } catch { /* localStorage 不可（プライベートモード等）は既定値へ */ }
+  return 1
+}
+
 // キャンバス描画やアンドゥ履歴に含める必要がない UI 固有の状態
 export const ui = reactive({
   hoverPos:   null,    // [x, y] | null
@@ -15,10 +28,17 @@ export const ui = reactive({
   lessonPageOpen: false, // レッスン選択の全画面オーバーレイ表示
   lessonAsideSide: savedAsideSide, // 'left' | 'right'：お題パネルをキャンバスのどちら側に出すか
   lessonOverlayOn: false, // お題をキャンバス背景に透過表示中か（参照画像オーバーレイの枠を流用）
+  exportScale: loadExportScale(), // PNG 書き出しの倍率（EXPORT パネル）
 })
 
 // お題パネルの左右を切り替えて保存する。
 export function toggleLessonAsideSide() {
   ui.lessonAsideSide = ui.lessonAsideSide === 'right' ? 'left' : 'right'
   localStorage.setItem(ASIDE_SIDE_KEY, ui.lessonAsideSide)
+}
+
+// 書き出し倍率を選んで保存する（次回起動時も復元する）。
+export function setExportScale(n) {
+  ui.exportScale = n
+  try { localStorage.setItem(EXPORT_SCALE_KEY, String(n)) } catch { /* 保存不可は無視 */ }
 }
