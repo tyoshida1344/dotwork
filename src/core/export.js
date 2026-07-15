@@ -1,9 +1,10 @@
 import { S } from './state.js'
+import { ui } from './ui.js'
 
 // ピクセル配列を PNG にしてダウンロードする。エディタ（現在のキャンバス）と
-// マイページ（保存済みの作品）で共用する。背景色・補助線は含めない。
-export function exportPixelsPNG(pixels, cols, rows, filename = 'dotwork.png') {
-  const scale = 16
+// マイページ（保存済みの作品）で共用する。scale はドット1マスの出力ピクセル数。
+// 背景色・補助線は含めない。
+export function exportPixelsPNG(pixels, cols, rows, filename = 'dotwork.png', scale = 1) {
   const ec = document.createElement('canvas')
   ec.width = cols * scale; ec.height = rows * scale
   const ex = ec.getContext('2d')
@@ -19,5 +20,5 @@ export function exportPixelsPNG(pixels, cols, rows, filename = 'dotwork.png') {
 }
 
 export function exportPNG() {
-  exportPixelsPNG(S.pixels, S.cols, S.rows)
+  exportPixelsPNG(S.pixels, S.cols, S.rows, 'dotwork.png', ui.exportScale)
 }

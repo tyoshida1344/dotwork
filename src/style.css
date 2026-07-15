@@ -498,7 +498,9 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
 /* 縁取り色ピッカー */
 .out-col { width: 32px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; }
 
-/* 書き出しパネル：出力サイズの注記 */
+/* 書き出しパネル：倍率セレクトと出力サイズの注記 */
+.exp-scale { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+.exp-scale select { margin-left: auto; padding: 4px 6px; }
 .exp-note { color: var(--muted); font-size: 12px; text-align: center; }
 
 /* ── レッスン：お題パネル（キャンバス横） ──── */
@@ -1003,6 +1005,10 @@ input[type=range] { flex: 1; height: 4px; accent-color: var(--amber); cursor: po
   padding: 7px 9px;
 }
 .work-menu-list button:hover:not(:disabled) { background: var(--bg3); color: var(--amber); }
+/* 書き出しボタンの横に倍率プルダウンを並べる */
+.work-menu-export { display: flex; align-items: center; gap: 4px; }
+.work-menu-export button { flex: 1; width: auto; }
+.work-menu-export select { flex-shrink: 0; padding: 4px 6px; }
 .work-menu-sep { height: 1px; background: var(--border); margin: 4px 2px; }
 .work-menu-danger { color: #dc2626; }
 .work-menu-danger:hover:not(:disabled) { background: #fef2f2; color: #dc2626; }
