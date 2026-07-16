@@ -4,7 +4,7 @@ import { computed } from 'vue'
 // 全画面共通のボタン。素の <button> と router-link 版を統合する。
 // バリアントの使い分けは README「UI／デザイン方針」を参照。
 const props = defineProps({
-  // default（副次）/ accent（主操作・アンバー）/ teal / danger（破壊的・赤）/ subtle（補助の小ボタン）
+  // variant の値: default（副次）/ accent（主操作・アンバー）/ teal / danger（破壊的・赤）/ subtle（補助の小ボタン）
   variant: { type: String, default: 'default' },
   block: { type: Boolean, default: false }, // 幅いっぱい
   compact: { type: Boolean, default: false }, // 詰めた小ボタン
