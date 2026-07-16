@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { signOut } from '~/core/auth.js'
 import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '~/core/worksApi.js'
@@ -31,12 +31,9 @@ function toggleMenu(id) { openMenuId.value = openMenuId.value === id ? null : id
 function onDocClick() { closeMenu() }
 function onDocKeydown(e) { if (e.key === 'Escape') closeMenu() }
 
-// メニュー項目を選んだら、閉じる描画を済ませてから実行する。
-// confirm/prompt は同期的にブロックするため、nextTick を挟まないと
-// ネイティブダイアログの背後にメニューが開いたまま残る。
-async function pick(action, w) {
+// メニューを閉じてからメニューで選んだ操作（action = onRename / onDuplicate / onExport / onDelete）を実行する。
+function pick(action, w) {
   closeMenu()
-  await nextTick()
   action(w)
 }
 

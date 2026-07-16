@@ -22,7 +22,7 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
 const classes = computed(() => [
   'btn',
-  `btn--${props.variant}`,
+  props.variant !== 'default' && `btn--${props.variant}`,
   { 'btn--block': props.block, 'btn--compact': props.compact, 'is-active': props.active },
 ])
 </script>
