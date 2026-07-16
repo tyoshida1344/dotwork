@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ui } from '../core/ui.js'
+import { ui } from '~/core/ui.js'
 
 const contentEl = ref(null)
 const navEl     = ref(null)

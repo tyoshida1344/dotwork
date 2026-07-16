@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js'
+import { supabase } from '~/core/supabase.js'
 
 // 作品（works）の CRUD。読み書きとも anon クライアント＋ログイン中のセッションで直接行い、
 // 「本人の行だけ」は RLS（auth.uid() = user_id）が保証する。レッスンと違い Edge Function は挟まない。

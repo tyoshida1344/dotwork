@@ -2,9 +2,9 @@
 import { ref, onMounted } from 'vue'
 import {
   fetchLessons, createLesson, updateLesson, deleteLesson, reorderLessons, deleteRefImage,
-} from '../core/lessonsApi.js'
-import { invalidateLessons } from '../core/lessons.js'
-import LessonForm from '../components/admin/LessonForm.vue'
+} from '~/core/lessonsApi.js'
+import { invalidateLessons } from '~/core/lessons.js'
+import LessonForm from '~/components/organisms/LessonForm.vue'
 
 // レッスン管理（/admin/lessons）。認証は親シェル（AdminView）が担うため、
 // ここはログイン済み前提で一覧取得・CRUD・並び替えだけを行う。

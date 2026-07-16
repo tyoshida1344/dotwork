@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, watch, computed, onBeforeUnmount } from 'vue'
-import { uploadRefImage, deleteRefImage } from '../../core/lessonsApi.js'
-import { extractPaletteFromImage } from '../../core/palette.js'
+import { uploadRefImage, deleteRefImage } from '~/core/lessonsApi.js'
+import { extractPaletteFromImage } from '~/core/palette.js'
 
 const props = defineProps({
   // 編集対象のレッスン。新規作成時は空テンプレートを渡す。

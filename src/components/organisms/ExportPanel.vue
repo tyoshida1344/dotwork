@@ -1,8 +1,8 @@
 <script setup>
-import { S } from '../../core/state.js'
-import { ui, EXPORT_SCALES, setExportScale } from '../../core/ui.js'
-import { exportPNG } from '../../core/export.js'
-import SidePanel from '../SidePanel.vue'
+import { S } from '~/core/state.js'
+import { ui, EXPORT_SCALES, setExportScale } from '~/core/ui.js'
+import { exportPNG } from '~/core/export.js'
+import SidePanel from '~/components/molecules/SidePanel.vue'
 
 // 書き出し倍率は EXPORT パネルで選べる（ui.exportScale）。ファイル出力はヘッダーの「保存」（＝アカウントへ作品を保存）と紛らわしいため、このパネルに分けている。
 </script>

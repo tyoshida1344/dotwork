@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { S } from '../../core/state.js'
-import SidePanel from '../SidePanel.vue'
+import { S } from '~/core/state.js'
+import SidePanel from '~/components/molecules/SidePanel.vue'
 
 // プレビュー確認に使いやすい固定プリセット（白〜黒＋コントラスト確認用の有彩色）
 const PRESETS = ['#ffffff', '#9aa0a6', '#000000', '#2a6cf0', '#e0407a', '#3fbf6f']

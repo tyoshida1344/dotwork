@@ -1,11 +1,11 @@
 <script setup>
-import { S } from '../core/state.js'
-import { ui } from '../core/ui.js'
-import { resetCanvas, drawPx } from '../core/canvas.js'
-import { clearAll } from '../core/history.js'
-import { lessonState } from '../core/lessons.js'
-import { isAuthAvailable, authState, signInWithGoogle } from '../core/auth.js'
-import { worksState, saveWork, stashEditor, clearStash } from '../core/works.js'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
+import { resetCanvas, drawPx } from '~/core/canvas.js'
+import { clearAll } from '~/core/history.js'
+import { lessonState } from '~/core/lessons.js'
+import { isAuthAvailable, authState, signInWithGoogle } from '~/core/auth.js'
+import { worksState, saveWork, stashEditor, clearStash } from '~/core/works.js'
 
 const emit = defineEmits(['undo', 'redo'])
 

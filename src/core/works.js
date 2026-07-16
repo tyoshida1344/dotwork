@@ -1,9 +1,9 @@
 import { reactive } from 'vue'
-import { S } from './state.js'
-import { ui } from './ui.js'
-import { PAL } from './palette.js'
-import { clearHistory } from './history.js'
-import { lessonState, ensureLessons } from './lessons.js'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
+import { PAL } from '~/core/palette.js'
+import { clearHistory } from '~/core/history.js'
+import { lessonState, ensureLessons } from '~/core/lessons.js'
 
 // 保存した作品とエディタの橋渡し。ここでは supabase.js / worksApi.js を静的 import しない
 // （@supabase/supabase-js を初期バンドルから外すため。lessons.js と同じ作法）。

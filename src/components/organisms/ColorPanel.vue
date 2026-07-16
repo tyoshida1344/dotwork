@@ -1,7 +1,7 @@
 <script setup>
-import { S } from '../../core/state.js'
-import { generateLamp } from '../../core/palette.js'
-import SidePanel from '../SidePanel.vue'
+import { S } from '~/core/state.js'
+import { generateLamp } from '~/core/palette.js'
+import SidePanel from '~/components/molecules/SidePanel.vue'
 import { computed } from 'vue'
 
 const lamp = computed(() => generateLamp(S.color))

@@ -1,4 +1,4 @@
-import { S } from './state.js'
+import { S } from '~/core/state.js'
 
 // アンドゥ履歴は reactive(S) の外（素の配列）で保持する。
 // 大量のピクセルスナップショットを Proxy 化する無駄を避けるため。

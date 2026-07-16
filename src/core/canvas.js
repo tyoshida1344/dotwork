@@ -1,5 +1,5 @@
-import { S, saveDefaultSize } from './state.js'
-import { clearHistory } from './history.js'
+import { S, saveDefaultSize } from '~/core/state.js'
+import { clearHistory } from '~/core/history.js'
 
 let bgX, pxX, gX, _bgEl, _cvEl, _gridEl, _wrapEl
 

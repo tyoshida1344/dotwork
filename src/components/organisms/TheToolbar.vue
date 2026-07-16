@@ -1,5 +1,5 @@
 <script setup>
-import { S } from '../core/state.js'
+import { S } from '~/core/state.js'
 
 const TOOLS = [
   { id: 'pencil', icon: '✏',  key: 'B', label: 'ペン (B)' },

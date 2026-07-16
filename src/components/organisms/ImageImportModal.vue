@@ -1,10 +1,10 @@
 <script setup>
 import { reactive, ref, computed, watch, nextTick } from 'vue'
-import { S } from '../core/state.js'
-import { ui } from '../core/ui.js'
-import { saveUndo } from '../core/history.js'
-import { drawPx } from '../core/canvas.js'
-import { imageToPixels } from '../core/palette.js'
+import { S } from '~/core/state.js'
+import { ui } from '~/core/ui.js'
+import { saveUndo } from '~/core/history.js'
+import { drawPx } from '~/core/canvas.js'
+import { imageToPixels } from '~/core/palette.js'
 
 const imgEl = ref(null)
 const scale = ref(1)        // 表示スケール（display px ÷ image px）

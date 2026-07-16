@@ -1,6 +1,6 @@
 <script setup>
-import { S } from '../../core/state.js'
-import SidePanel from '../SidePanel.vue'
+import { S } from '~/core/state.js'
+import SidePanel from '~/components/molecules/SidePanel.vue'
 
 function onHDivInput(e) { S.headUnits = parseInt(e.target.value) }
 function onVDivInput(e) { S.vDivUnits = parseInt(e.target.value) }

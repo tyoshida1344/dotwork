@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { signOut } from '../core/auth.js'
-import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '../core/worksApi.js'
-import { worksState, openWork } from '../core/works.js'
-import { exportPixelsPNG } from '../core/export.js'
-import { EXPORT_SCALES } from '../core/ui.js'
-import { ensureLessons } from '../core/lessons.js'
-import WorkThumb from '../components/mypage/WorkThumb.vue'
+import { signOut } from '~/core/auth.js'
+import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '~/core/worksApi.js'
+import { worksState, openWork } from '~/core/works.js'
+import { exportPixelsPNG } from '~/core/export.js'
+import { EXPORT_SCALES } from '~/core/ui.js'
+import { ensureLessons } from '~/core/lessons.js'
+import WorkThumb from '~/components/atoms/WorkThumb.vue'
 
 // 保存した作品の一覧・再開・整理。未ログインではルートガードが弾くので、ここは常にログイン済み。
 const router = useRouter()
