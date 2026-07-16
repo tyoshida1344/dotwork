@@ -44,6 +44,23 @@ npm run preview  # ビルド結果の確認
 
 本番デプロイ・本番 DB へのマイグレーション適用は [OPERATIONS.md](OPERATIONS.md) を参照。
 
+## PR プレビュー（`preview` ラベル）
+
+PR ごとにプレビューの要否を選べる**オプトイン方式**。**`preview` ラベルを付けた PR だけ** GitHub Actions（`.github/workflows/netlify-preview.yml`）が Netlify にプレビューをデプロイする。ラベルの無い PR には作らない（Netlify 側の自動 Deploy Preview は無効化しておく）。ローカルからの下書きプレビュー `npm run deploy:preview` とは別物。
+
+- **発火 / 再デプロイ**：ラベル追加・push（`synchronize`）・再オープンで発火。URL は `https://deploy-preview-<PR番号>--<サイト名>.netlify.app` に固定され、push のたびに**同じ URL へ再デプロイ**する（連続 push は最後が勝つ）。デプロイのたびに PR へプレビュー URL をコメントする。
+- **ビルド**：Actions が `npm ci && npm run build`（Node 20）で作る。`VITE_SUPABASE_*` を注入するので、レッスン表示（anon 読取）まで動く。SPA フォールバックは `netlify.toml` の `[[redirects]]` が効くため `public/_redirects` は不要。
+
+### 環境構築
+
+| やること | 内容 |
+|---|---|
+| GitHub Secrets 登録 | `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID` / `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`（Settings → Secrets and variables → Actions） |
+| Netlify 設定 | 自動 Deploy Preview を無効化（本番＝main の自動デプロイは残す） |
+| ラベル作成 | リポジトリに `preview` ラベルを作る |
+
+> **プレビューで動かないもの**：`/admin` の書き込みは Edge Function の `ALLOWED_ORIGINS` が完全一致（ワイルドカード非対応）のため不可。Google ログインも既定では不可で、通すには Supabase の Redirect URLs にワイルドカード（`https://deploy-preview-*--<サイト名>.netlify.app/**`）を足す。
+
 ## Supabase 連携（レッスン管理・ログイン）
 
 レッスン管理画面 `/admin` と、学習者のログイン・作品の保存（`/mypage`）は Supabase（DB / 認証 / ストレージ）を使います。ここでは**ローカルでの動かし方**を説明します。**本番セットアップ・本番へのマイグレーション適用・デプロイは [OPERATIONS.md](OPERATIONS.md)** を、設計・仕組みは [`CLAUDE.md`](CLAUDE.md) の「ルーティングとレッスン管理」「学習者アカウントと作品」を参照。
