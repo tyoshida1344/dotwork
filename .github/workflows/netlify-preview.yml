@@ -1,0 +1,67 @@
+name: Netlify Preview (label-gated)
+
+# `preview` ラベルが付いた PR のときだけ Netlify プレビューをデプロイする（オプトイン）。
+# ラベル追加・push（synchronize）・再オープンで発火し、PR 番号で URL を固定して再デプロイする。
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# PR 単位で直列化し、連続 push は最後の実行だけ残す（古いビルドが alias を巻き戻すのを防ぐ）。
+concurrency:
+  group: netlify-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    # preview ラベルが付いている PR のときだけ実行。
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # VITE_* はビルド時に埋め込まれる。未注入だと Supabase 連携がツリーシェイクで外れるため必ず渡す。
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      # netlify-cli（devDependency）で prebuilt な dist を alias デプロイ。URL は PR 番号で固定。
+      - name: Deploy to Netlify
+        id: deploy
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_TELEMETRY_DISABLED: "1"
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          output=$(npx netlify deploy \
+            --dir=dist \
+            --alias "deploy-preview-${{ github.event.pull_request.number }}" \
+            --message "PR #${{ github.event.pull_request.number }} @ ${HEAD_SHA:0:7}" \
+            --json)
+          echo "$output"
+          url=$(echo "$output" | jq -r '.deploy_url // .url')
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      # デプロイのたびに新規コメントでプレビュー URL を知らせる。
+      - name: Comment preview URL
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          URL: ${{ steps.deploy.outputs.url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '🚀 Netlify プレビューをデプロイしました。\n\n- プレビュー: %s\n- 反映コミット: `%s`\n' \
+            "$URL" "${HEAD_SHA:0:7}" > body.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file body.md
