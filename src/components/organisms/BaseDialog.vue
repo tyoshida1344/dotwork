@@ -3,8 +3,7 @@ import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { dialogState, resolveDialog } from '~/core/dialog.js'
 import BaseButton from '~/components/atoms/BaseButton.vue'
 
-// ネイティブ alert/confirm/prompt を置き換える共通ダイアログ。App.vue に1つだけ置き、
-// core/dialog.js の状態を描画する。文言は呼び出し側がそのまま渡す（ui-copy 規約に従う）。
+// core/dialog.js の状態を描画する。文言は呼び出し側がそのまま渡す。
 const inputEl = ref(null)
 const inputVal = ref('')
 

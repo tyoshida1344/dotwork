@@ -1,5 +1,5 @@
 <script setup>
-// ツールバーのツールボタン。旧 .tbtn（実体は div）を button 化し、L/R バッジ・アクティブ枠・キーヒントを props で吸収する。
+// ツールバーのツールボタン。L/R バッジ・アクティブ枠・キーヒントを props で受け取る。
 // 左右クリックの割り当ては親が行う。
 defineProps({
   hotkey: { type: String, default: '' }, // 右下に出すキーヒント（.tkey）
@@ -65,8 +65,7 @@ defineProps({
 
 @media (max-width: 820px) {
   .tbtn { width: 44px; height: 44px; }
-  /* タッチでは左右クリックを区別できないため、L/R バッジを隠す
-     （枠線＝アクティブツール表示は残し、右割り当ての枠線だけ無効化） */
+  /* タッチでは左右クリックを区別できないため L/R バッジを隠す（枠線＝アクティブ表示は残し、右割り当ての枠線だけ無効化） */
   .tb-l, .tb-r { display: none; }
   .tbtn.on-r { border-color: var(--border); }
 }

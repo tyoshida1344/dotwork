@@ -1,5 +1,5 @@
 <script setup>
-// ラベル＋スライダー＋数値表示の1行（旧 .srow）。スライダー本体は default スロットに置く。
+// ラベル＋スライダー＋数値表示の1行。
 defineProps({
   label: { type: String, default: '' },
   value: { type: [String, Number], default: '' },

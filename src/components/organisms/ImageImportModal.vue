@@ -224,9 +224,9 @@ function cancel() {
   border: 1px solid var(--bg);
   border-radius: 2px;
 }
-.crop-handle.nw { top: -6px;    left: -6px;   cursor: nwse-resize; }
-.crop-handle.ne { top: -6px;    right: -6px;  cursor: nesw-resize; }
-.crop-handle.sw { bottom: -6px; left: -6px;   cursor: nesw-resize; }
-.crop-handle.se { bottom: -6px; right: -6px;  cursor: nwse-resize; }
+.crop-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.crop-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.crop-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.crop-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
 .crop-actions { display: flex; gap: 8px; justify-content: flex-end; }
 </style>

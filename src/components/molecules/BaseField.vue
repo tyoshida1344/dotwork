@@ -1,6 +1,5 @@
 <script setup>
-// ラベル＋入力欄の1組（旧 .admin-field）。入力（input/select/textarea）は default スロットに置く。
-// 複数の入力をまとめる時は tag="div"（label だとクリックが最初の入力に吸われるため）。
+// ラベル＋入力欄の1組。複数の入力をまとめる時は tag="div"（label だとクリックが最初の入力に吸われるため）。
 defineProps({
   label: { type: String, default: '' },
   tag: { type: String, default: 'label' }, // label | div

@@ -1,13 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 
-// 全画面共通のボタン。素の <button> と router-link 版（旧 .hbtn / .admin-btn）を統合する。
+// 全画面共通のボタン。素の <button> と router-link 版を統合する。
 // バリアントの使い分けは README「UI／デザイン方針」を参照。
 const props = defineProps({
   // default（副次）/ accent（主操作・アンバー）/ teal / danger（破壊的・赤）/ subtle（補助の小ボタン）
   variant: { type: String, default: 'default' },
-  block: { type: Boolean, default: false }, // 幅いっぱい（旧 .abtn）
-  compact: { type: Boolean, default: false }, // 詰めた小ボタン（旧 .lf-x / .admin-move / ⋯）
+  block: { type: Boolean, default: false }, // 幅いっぱい
+  compact: { type: Boolean, default: false }, // 詰めた小ボタン
   active: { type: Boolean, default: false }, // トグルのオン表示（アンバーの淡い塗り）
   tag: { type: String, default: 'button' }, // button | router-link
   to: { type: [String, Object], default: undefined },
@@ -57,7 +57,7 @@ const classes = computed(() => [
 .btn:focus { outline: 1px solid var(--amber); outline-offset: 1px; }
 .btn:hover { border-color: var(--amber); color: var(--amber); }
 
-/* router-link 版はインライン要素なので中身を揃える（旧 .hbtn / .admin-btn） */
+/* router-link 版はインライン要素なので中身を揃える */
 a.btn { display: inline-flex; align-items: center; }
 
 /* ── バリアント ── */
@@ -68,7 +68,7 @@ a.btn { display: inline-flex; align-items: center; }
 .btn--danger { border-color: #fca5a5; color: #dc2626; }
 .btn--danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
 
-/* 控えめな小ボタン（旧 .la-swap） */
+/* 控えめな小ボタン */
 .btn--subtle { font-size: 13px; line-height: 1; padding: 3px 7px; color: var(--muted); border-radius: 4px; }
 .btn--subtle:hover { color: var(--text); border-color: var(--muted); background: var(--bg3); }
 
