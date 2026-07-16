@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ui } from '~/core/ui.js'
 
 const contentEl = ref(null)
-const navEl     = ref(null)
+const navEl = ref(null)
 
 // ── 例示用のミニ・ドット図 ──────────────────
 // パターン文字列（1文字=1セル）を SVG に変換して OK/NG を見比べられるようにする。
@@ -227,14 +227,16 @@ function scrollTo(id) {
     </nav>
 
     <div ref="contentEl" id="gcontent">
-      <div
-        v-for="s in SECTIONS"
-        :key="s.id"
-        :id="'gs-' + s.id"
-        :data-sec="s.id"
-        class="gsec"
-        v-html="s.html"
-      ></div>
+      <div id="gcontent-inner">
+        <div
+          v-for="s in SECTIONS"
+          :key="s.id"
+          :id="'gs-' + s.id"
+          :data-sec="s.id"
+          class="gsec"
+          v-html="s.html"
+        ></div>
+      </div>
     </div>
 
     <button id="gclose" @click="ui.guidePageOpen = false">✕ 閉じる</button>
@@ -280,7 +282,9 @@ function scrollTo(id) {
 #gclose { position: absolute; top: 12px; right: 16px; padding: 5px 14px; }
 
 /* 本文（各セクションの中身は v-html で挿入されるため :deep() で当てる） */
-#gcontent { flex: 1; overflow-y: auto; padding: 36px 44px; max-width: 780px; line-height: 1.8; }
+/* #gcontent は全幅のスクロール領域（縦スクロールバーを画面右端に出す）。本文は #gcontent-inner が左寄せで受ける。 */
+#gcontent { flex: 1; overflow-y: auto; }
+#gcontent-inner { padding: 36px 44px; max-width: 780px; line-height: 1.8; }
 #gcontent :deep(h2) {
   font-family: 'Silkscreen', monospace;
   color: var(--amber);
@@ -319,6 +323,6 @@ function scrollTo(id) {
   .gnav-link { white-space: nowrap; border-left: none; border-bottom: 2px solid transparent; padding: 11px 13px; }
   .gnav-link.active { border-left: none; border-bottom-color: var(--amber); }
   #gclose { top: 8px; right: 10px; }
-  #gcontent { padding: 20px 18px; }
+  #gcontent-inner { padding: 20px 18px; }
 }
 </style>
