@@ -10,6 +10,7 @@
 ## コーディング規約
 
 - **import は `~`（= `src`）エイリアスで書く。`./`・`../` などの相対パスは原則使わない**（設定は `vite.config.js` / `jsconfig.json`）。例: `import SidePanel from '~/components/molecules/SidePanel.vue'`。
+- **桁揃えのためのスペースを入れない**（CSS 変数・props・行末コメント等を並べる時、値やコメントの前を余分なスペースで揃えない。コロンの後は半角スペース1つ）。
 
 ## プロジェクト概要
 
