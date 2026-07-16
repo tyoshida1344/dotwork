@@ -6,6 +6,7 @@ import { initContexts, resize, drawPx, drawGrid, drawHover, drawFillPreview, zoo
 import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '~/core/tools.js'
 import { saveUndo } from '~/core/history.js'
 import { lessonState, exitLesson, setLessonOverlay } from '~/core/lessons.js'
+import BaseButton from '~/components/atoms/BaseButton.vue'
 
 const bgcvEl   = ref(null)
 const cvEl     = ref(null)
@@ -219,11 +220,12 @@ onMounted(() => {
       <div class="la-head">
         <span class="la-lv">Lv.{{ lessonState.active.level }}</span>
         <span class="la-tag">お題</span>
-        <button
-          class="la-swap"
+        <BaseButton
+          variant="subtle"
+          style="margin-left:auto"
           @click="toggleLessonAsideSide"
           :title="ui.lessonAsideSide === 'right' ? 'お題を左側に移動' : 'お題を右側に移動'"
-        >⇄</button>
+        >⇄</BaseButton>
       </div>
       <div
         ref="laThumbEl"
@@ -240,13 +242,13 @@ onMounted(() => {
       </div>
       <h3 class="la-title">{{ lessonState.active.title }}</h3>
       <p class="la-desc">{{ lessonState.active.desc }}</p>
-      <button
-        class="abtn la-overlay"
-        :class="{ on: ui.lessonOverlayOn }"
+      <BaseButton
+        block
+        :active="ui.lessonOverlayOn"
         :title="ui.lessonOverlayOn ? '不透明度は REFERENCE パネルで調整できます' : ''"
         @click="onToggleLessonOverlay"
-      >{{ ui.lessonOverlayOn ? '☑ 背景に重ねる' : '☐ 背景に重ねる' }}</button>
-      <button class="abtn" @click="exitLesson">✕ レッスンを終了</button>
+      >{{ ui.lessonOverlayOn ? '☑ 背景に重ねる' : '☐ 背景に重ねる' }}</BaseButton>
+      <BaseButton block @click="exitLesson">✕ レッスンを終了</BaseButton>
     </aside>
     <div ref="cwrapEl" id="cwrap">
       <canvas ref="bgcvEl"   id="bgcv"></canvas>
@@ -263,3 +265,74 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+#carea {
+  grid-area: carea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg,#eceef1 0,#eceef1 10px,#f3f4f6 10px,#f3f4f6 20px);
+}
+#cwrap { position: relative; cursor: crosshair; flex-shrink: 0; }
+#cwrap canvas {
+  position: absolute;
+  top: 0; left: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+#bgcv { z-index: var(--z-canvas-bg); }
+#cv { z-index: var(--z-canvas-px); }
+#gridcv { z-index: var(--z-canvas-grid); touch-action: none; } /* 描画中のスクロール/ピンチを抑止 */
+
+/* レッスン：お題パネル（キャンバス横） */
+#carea.lesson-on { gap: 16px; }
+/* お題パネルをキャンバスの右側へ（flex の並び順を入れ替える） */
+#carea.aside-right .lesson-aside { order: 1; }
+.lesson-aside {
+  width: calc(210px * var(--la-scale, 1));   /* ホイール/ピンチでパネルごと拡大縮小 */
+  flex-shrink: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 92%;
+  overflow-y: auto;
+}
+.la-head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.la-lv {
+  font-family: 'Silkscreen', monospace;
+  font-size: 12px;
+  color: var(--on-accent);
+  background: var(--amber);
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.la-tag { color: var(--muted); font-size: 13px; }
+.la-thumb {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--checker) 0 / 14px 14px;
+  padding: 8px;
+  margin-bottom: 9px;
+  touch-action: none;        /* ピンチ操作をブラウザのズーム/スクロールに奪われない */
+}
+.la-thumb img {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.la-title { font-size: 14px; color: var(--text); margin-bottom: 5px; }
+.la-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 11px; }
+
+@media (max-width: 820px) {
+  #carea { flex: 1; min-height: 0; }
+  /* お題パネルはキャンバスの上に縦積み。画像の最大幅を拡大する。 */
+  #carea.lesson-on { flex-direction: column; gap: 10px; padding: 8px; overflow-y: auto; }
+  .lesson-aside { width: 100%; max-width: 360px; max-height: none; }
+  .la-thumb img { max-width: calc(160px * var(--la-scale, 1)); margin: 0 auto; }
+}
+</style>

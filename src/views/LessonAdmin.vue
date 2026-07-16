@@ -4,7 +4,9 @@ import {
   fetchLessons, createLesson, updateLesson, deleteLesson, reorderLessons, deleteRefImage,
 } from '~/core/lessonsApi.js'
 import { invalidateLessons } from '~/core/lessons.js'
+import { showConfirm } from '~/core/dialog.js'
 import LessonForm from '~/components/organisms/LessonForm.vue'
+import BaseButton from '~/components/atoms/BaseButton.vue'
 
 // レッスン管理（/admin/lessons）。認証は親シェル（AdminView）が担うため、
 // ここはログイン済み前提で一覧取得・CRUD・並び替えだけを行う。
@@ -56,7 +58,7 @@ async function onSave(data) {
 }
 
 async function onDelete(l) {
-  if (!confirm(`「${l.title}」を削除しますか？一覧から見えなくなります。`)) return
+  if (!await showConfirm(`「${l.title}」を削除しますか？一覧から見えなくなります。`)) return
   try {
     await deleteLesson(l.id)   // 論理削除（お題画像は残す）
     await refresh()
@@ -87,11 +89,11 @@ async function move(index, dir) {
   <div>
     <div class="admin-head">
       <div class="admin-subhead">
-        <router-link class="admin-btn" to="/admin">← 管理トップ</router-link>
+        <BaseButton tag="router-link" to="/admin">← 管理トップ</BaseButton>
         <span class="admin-subtitle">レッスン管理</span>
       </div>
       <div class="admin-head-actions">
-        <button class="btn-a" @click="onNew">＋ 新規レッスン</button>
+        <BaseButton variant="accent" @click="onNew">＋ 新規レッスン</BaseButton>
       </div>
     </div>
 
@@ -113,10 +115,10 @@ async function move(index, dir) {
           <div class="admin-item-title">{{ l.title }}</div>
         </div>
         <div class="admin-item-actions">
-          <button class="admin-move" :disabled="i === 0" title="上へ" @click="move(i, -1)">▲</button>
-          <button class="admin-move" :disabled="i === lessons.length - 1" title="下へ" @click="move(i, 1)">▼</button>
-          <button @click="onEdit(l)">編集</button>
-          <button class="btn-r" @click="onDelete(l)">削除</button>
+          <BaseButton compact :disabled="i === 0" title="上へ" @click="move(i, -1)">▲</BaseButton>
+          <BaseButton compact :disabled="i === lessons.length - 1" title="下へ" @click="move(i, 1)">▼</BaseButton>
+          <BaseButton @click="onEdit(l)">編集</BaseButton>
+          <BaseButton variant="danger" @click="onDelete(l)">削除</BaseButton>
         </div>
       </li>
     </ul>
@@ -131,3 +133,45 @@ async function move(index, dir) {
     />
   </div>
 </template>
+
+<style scoped>
+.admin-subhead { display: flex; gap: 12px; align-items: center; }
+.admin-subtitle { font-family: 'Silkscreen', monospace; font-size: 15px; color: var(--text); letter-spacing: .5px; }
+.admin-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.admin-item {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.admin-item-thumb {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--checker) 0 / 12px 12px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.admin-item-thumb img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.admin-item-body { flex: 1; min-width: 0; }
+.admin-item-title { font-size: 15px; color: var(--text); margin-top: 4px; }
+.admin-unpublished {
+  font-size: 11px;
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  border-radius: 3px;
+  padding: 0 5px;
+}
+.admin-item-actions { display: flex; gap: 6px; align-items: center; }
+
+/* 一覧アイテムのレベル／スペック表示（レッスンカードと同じ意匠） */
+.lesson-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.lesson-lv { font-family: 'Silkscreen', monospace; font-size: 12px; color: var(--on-accent); background: var(--amber); padding: 2px 8px; border-radius: 3px; }
+.lesson-spec { color: var(--muted); font-size: 12px; }
+
+@media (max-width: 820px) {
+  .admin-item { flex-wrap: wrap; }
+  .admin-item-actions { width: 100%; justify-content: flex-end; }
+}
+</style>

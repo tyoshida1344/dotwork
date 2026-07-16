@@ -4,7 +4,10 @@ import { ui } from '~/core/ui.js'
 import { drawPx } from '~/core/canvas.js'
 import { extractPaletteFromImage } from '~/core/palette.js'
 import { lessonState } from '~/core/lessons.js'
+import { showAlert } from '~/core/dialog.js'
 import SidePanel from '~/components/molecules/SidePanel.vue'
+import SliderRow from '~/components/molecules/SliderRow.vue'
+import BaseButton from '~/components/atoms/BaseButton.vue'
 import { ref } from 'vue'
 
 const fileInput = ref(null)
@@ -37,15 +40,15 @@ function onOverlayInput(e) {
 }
 function onExtract() {
   if (lessonState.active) return  // レッスン中は色セットを固定（ボタンも disabled）
-  if (!S.refImg) { alert('先に参照画像を読み込んでください。'); return }
+  if (!S.refImg) { showAlert('先に参照画像を読み込んでください。'); return }
   S.palette = extractPaletteFromImage(S.refImg)
   ui.palKey = 'ref'
 }
 function onConvert() {
   // お題オーバーレイ中はお題（クロスオリジン画像）が S.refImg。canvas を汚染して
   // getImageData が失敗するため変換させない（ボタンも disabled）。
-  if (ui.lessonOverlayOn) { alert('お題はドットに変換できません。「背景に重ねる」を解除してください。'); return }
-  if (!S.refImg) { alert('先に参照画像を読み込んでください。'); return }
+  if (ui.lessonOverlayOn) { showAlert('お題はドットに変換できません。「背景に重ねる」を解除してください。'); return }
+  if (!S.refImg) { showAlert('先に参照画像を読み込んでください。'); return }
   ui.cropOpen = true
 }
 function clearRef() {
@@ -76,28 +79,51 @@ function clearRef() {
     </div>
     <input ref="fileInput" type="file" accept="image/*" style="display:none" @change="onFileChange">
 
-    <div class="srow" style="margin-top:7px">
-      <span class="slbl">オーバーレイ</span>
+    <SliderRow label="オーバーレイ" :value="`${Math.round(S.overlay * 100)}%`" style="margin-top:7px">
       <input
         type="range" min="0" max="80" step="5"
         :value="Math.round(S.overlay * 100)"
         @input="onOverlayInput"
       >
-      <span class="sval">{{ Math.round(S.overlay * 100) }}%</span>
-    </div>
-    <button
-      class="abtn btn-a"
+    </SliderRow>
+    <BaseButton
+      block
+      variant="accent"
       style="margin-top:5px"
       :disabled="ui.lessonOverlayOn"
       :title="ui.lessonOverlayOn ? 'お題はドットに変換できません。「背景に重ねる」を解除してください。' : ''"
       @click="onConvert"
-    >▦ ドットに変換</button>
-    <button
-      class="abtn"
+    >▦ ドットに変換</BaseButton>
+    <BaseButton
+      block
       :disabled="!!lessonState.active"
       :title="lessonState.active ? 'レッスン中はパレットが固定されます' : ''"
       @click="onExtract"
-    >⬦ パレット抽出</button>
-    <button class="abtn" style="color:var(--muted)" @click="clearRef">✕ 参照画像を消去</button>
+    >⬦ パレット抽出</BaseButton>
+    <BaseButton block style="color:var(--muted)" @click="clearRef">✕ 参照画像を消去</BaseButton>
   </SidePanel>
 </template>
+
+<style scoped>
+.ref-prev {
+  width: 100%; max-height: 120px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin-bottom: 7px;
+  background: var(--bg);
+  display: block;
+}
+.ref-drop {
+  border: 2px dashed var(--border);
+  border-radius: 4px;
+  padding: 11px;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.6;
+  transition: border-color .2s;
+}
+.ref-drop:hover, .ref-drop.over { border-color: var(--amber); color: var(--amber); }
+</style>

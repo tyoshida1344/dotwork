@@ -1,8 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 
-// 作品のサムネイル。画像は保存しておらず、DB のピクセル配列から等倍で描いて
-// CSS（image-rendering: pixelated）で引き伸ばす。
+// 作品のサムネイル。DB のピクセル配列から等倍で描いてCSS（image-rendering: pixelated）で引き伸ばす。（画像は保存しない。）
 const props = defineProps({
   pixels: { type: Array, required: true },
   cols: { type: Number, required: true },
@@ -33,3 +32,8 @@ watch(() => props.pixels, draw)
 <template>
   <canvas ref="cvEl" class="work-thumb-cv"></canvas>
 </template>
+
+<style scoped>
+/* サムネイルは作品のピクセル数と同じサイズの canvas。拡大してもドットを保つ */
+.work-thumb-cv { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+</style>

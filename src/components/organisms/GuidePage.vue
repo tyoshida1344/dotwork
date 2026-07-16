@@ -240,3 +240,85 @@ function scrollTo(id) {
     <button id="gclose" @click="ui.guidePageOpen = false">✕ 閉じる</button>
   </div>
 </template>
+
+<style scoped>
+/* オーバーレイの枠とナビ。本文 #gcontent の中身は v-html なので :deep() で当てる。 */
+#gpage {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: var(--z-overlay);
+  flex-direction: row;
+}
+#gpage.open { display: flex; }
+#gnav {
+  width: 185px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+#gnav-logo {
+  padding: 14px 16px;
+  font-family: 'Silkscreen', monospace;
+  color: var(--amber);
+  font-size: 15px;
+  border-bottom: 1px solid var(--border);
+}
+.gnav-link {
+  display: block;
+  padding: 10px 16px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  border-left: 2px solid transparent;
+  transition: color .1s, border-color .1s;
+}
+.gnav-link:hover { color: var(--text); }
+.gnav-link.active { color: var(--amber); border-left-color: var(--amber); background: var(--amber-soft); }
+#gclose { position: absolute; top: 12px; right: 16px; padding: 5px 14px; }
+
+/* 本文（各セクションの中身は v-html で挿入されるため :deep() で当てる） */
+#gcontent { flex: 1; overflow-y: auto; padding: 36px 44px; max-width: 780px; line-height: 1.8; }
+#gcontent :deep(h2) {
+  font-family: 'Silkscreen', monospace;
+  color: var(--amber);
+  font-size: 17px;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+#gcontent :deep(p) { margin-bottom: 14px; color: var(--text); }
+#gcontent :deep(ul) { padding-left: 20px; margin-bottom: 14px; }
+#gcontent :deep(ol) { padding-left: 20px; margin-bottom: 14px; }
+#gcontent :deep(li) { margin-bottom: 5px; color: var(--text); }
+#gcontent :deep(strong) { color: var(--amber); }
+#gcontent :deep(.gsec) { margin-bottom: 52px; padding-bottom: 36px; border-bottom: 1px solid var(--border); }
+#gcontent :deep(table) { border-collapse: collapse; width: 100%; margin-bottom: 14px; }
+#gcontent :deep(th) { text-align: left; padding: 5px 9px; border-bottom: 1px solid var(--border); color: var(--amber); font-size: 14px; }
+#gcontent :deep(td) { padding: 5px 9px; font-size: 14px; }
+#gcontent :deep(tr:nth-child(even) td) { background: var(--bg2); }
+#gcontent :deep(kbd) {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 3px; padding: 2px 6px;
+  font-family: 'DM Mono', monospace; font-size: 13px; color: var(--amber);
+}
+#gcontent :deep(.exrow) { display: flex; gap: 20px; flex-wrap: wrap; margin: 4px 0 14px; }
+#gcontent :deep(.ex) { margin: 0; }
+#gcontent :deep(.extag) { font-family: 'Silkscreen', monospace; font-size: 11px; letter-spacing: 1px; margin-bottom: 5px; }
+#gcontent :deep(.ex.ok .extag) { color: #16a34a; }
+#gcontent :deep(.ex.ng .extag) { color: #f06080; }
+#gcontent :deep(.exsvg) { display: block; border: 1px solid var(--border); background: var(--bg); }
+#gcontent :deep(figcaption) { font-size: 12px; color: var(--muted); margin-top: 6px; max-width: 160px; line-height: 1.5; }
+
+@media (max-width: 820px) {
+  /* 左ナビ→上部の横スクロールタブに */
+  #gpage { flex-direction: column; }
+  #gnav { width: 100%; display: flex; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  #gnav-logo { display: none; }
+  .gnav-link { white-space: nowrap; border-left: none; border-bottom: 2px solid transparent; padding: 11px 13px; }
+  .gnav-link.active { border-left: none; border-bottom-color: var(--amber); }
+  #gclose { top: 8px; right: 10px; }
+  #gcontent { padding: 20px 18px; }
+}
+</style>

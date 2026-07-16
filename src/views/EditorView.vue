@@ -57,3 +57,23 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
     <LessonPage />
   </div>
 </template>
+
+<style scoped>
+/* アプリの土台グリッド（各エリアの中身は organisms の scoped に集約） */
+#layout {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template:
+    "hdr  hdr   hdr"  var(--hdr)
+    "tbar carea side" 1fr
+    "stat stat  stat" var(--status)
+    / var(--toolbar) 1fr var(--sidebar);
+}
+
+@media (max-width: 820px) {
+  /* 固定グリッドをやめて縦並びに */
+  #layout { display: flex; flex-direction: column; }
+}
+</style>

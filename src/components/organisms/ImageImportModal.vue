@@ -5,6 +5,8 @@ import { ui } from '~/core/ui.js'
 import { saveUndo } from '~/core/history.js'
 import { drawPx } from '~/core/canvas.js'
 import { imageToPixels } from '~/core/palette.js'
+import BaseButton from '~/components/atoms/BaseButton.vue'
+import BaseModal from '~/components/templates/BaseModal.vue'
 
 const imgEl = ref(null)
 const scale = ref(1)        // 表示スケール（display px ÷ image px）
@@ -143,7 +145,7 @@ function cancel() {
 </script>
 
 <template>
-  <div id="crop" :class="{ open: ui.cropOpen }" @click.self="cancel">
+  <BaseModal :open="ui.cropOpen" @close="cancel">
     <div v-if="S.refImg" class="crop-card">
       <div class="crop-title">画像をドットに変換</div>
       <div class="crop-hint">
@@ -168,9 +170,63 @@ function cancel() {
       </div>
 
       <div class="crop-actions">
-        <button @click="cancel">キャンセル</button>
-        <button class="btn-a" @click="apply">▦ この範囲を反映</button>
+        <BaseButton @click="cancel">キャンセル</BaseButton>
+        <BaseButton variant="accent" @click="apply">▦ この範囲を反映</BaseButton>
       </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
+
+<style scoped>
+.crop-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  max-width: 92vw;
+  max-height: 92vh;
+}
+.crop-title {
+  font-family: 'Silkscreen', monospace;
+  color: var(--amber);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.crop-hint { color: var(--muted); font-size: 13px; line-height: 1.55; max-width: 60vw; }
+.cropstage {
+  position: relative;
+  overflow: hidden;
+  align-self: center;
+  line-height: 0;
+  background: var(--bg);
+  touch-action: none;
+}
+.cropstage img {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -webkit-user-drag: none;
+}
+.cropbox {
+  position: absolute;
+  border: 1px solid var(--amber);
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.55);
+  cursor: move;
+  box-sizing: border-box;
+}
+.crop-handle {
+  position: absolute;
+  width: 12px; height: 12px;
+  background: var(--amber);
+  border: 1px solid var(--bg);
+  border-radius: 2px;
+}
+.crop-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.crop-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.crop-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.crop-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+.crop-actions { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
