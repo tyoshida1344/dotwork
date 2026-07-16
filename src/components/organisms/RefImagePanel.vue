@@ -8,14 +8,17 @@ import { showAlert } from '~/core/dialog.js'
 import SidePanel from '~/components/molecules/SidePanel.vue'
 import SliderRow from '~/components/molecules/SliderRow.vue'
 import BaseButton from '~/components/atoms/BaseButton.vue'
+import BaseSpinner from '~/components/atoms/BaseSpinner.vue'
 import { ref } from 'vue'
 
 const fileInput = ref(null)
 const isDragOver = ref(false)
 const previewSrc = ref('')
+const loading = ref(false)
 
 function loadFile(file) {
   if (!file) return
+  loading.value = true
   const fr = new FileReader()
   fr.onload = e => {
     const img = new Image()
@@ -24,9 +27,12 @@ function loadFile(file) {
       previewSrc.value = e.target.result
       ui.lessonOverlayOn = false   // 手動の参照画像に差し替わったのでお題オーバーレイ表示は解除
       drawPx()
+      loading.value = false
     }
+    img.onerror = () => { loading.value = false }
     img.src = e.target.result
   }
+  fr.onerror = () => { loading.value = false }
   fr.readAsDataURL(file)
 }
 
@@ -75,6 +81,7 @@ function clearRef() {
       @dragleave="onDragLeave"
       @drop="onDrop"
     >
+      <BaseSpinner v-if="loading" class="ref-spinner" :size="24" />
       ここにドロップ<br>またはクリックして開く
     </div>
     <input ref="fileInput" type="file" accept="image/*" style="display:none" @change="onFileChange">
@@ -115,6 +122,7 @@ function clearRef() {
   display: block;
 }
 .ref-drop {
+  position: relative;
   border: 2px dashed var(--border);
   border-radius: 4px;
   padding: 11px;
@@ -126,4 +134,6 @@ function clearRef() {
   transition: border-color .2s;
 }
 .ref-drop:hover, .ref-drop.over { border-color: var(--amber); color: var(--amber); }
+/* 読み込み中は枠の中央にスピナーを重ねる（テキストの上、クリックは透過） */
+.ref-spinner { position: absolute; inset: 0; margin: auto; pointer-events: none; }
 </style>

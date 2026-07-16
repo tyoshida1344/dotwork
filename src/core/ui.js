@@ -28,6 +28,7 @@ export const ui = reactive({
   lessonPageOpen: false, // レッスン選択の全画面オーバーレイ表示
   lessonAsideSide: savedAsideSide, // 'left' | 'right'：お題パネルをキャンバスのどちら側に出すか
   lessonOverlayOn: false, // お題をキャンバス背景に透過表示中か（参照画像オーバーレイの枠を流用）
+  lessonOverlayLoading: false, // お題「背景に重ねる」の画像を読み込み中か
   exportScale: loadExportScale(), // PNG 書き出しの倍率（EXPORT パネル）
 })
 

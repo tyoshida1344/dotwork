@@ -1,13 +1,21 @@
 <script setup>
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import { ui } from '~/core/ui.js'
 import { LESSONS, lessonState, startLesson, ensureLessons } from '~/core/lessons.js'
 import { showConfirm } from '~/core/dialog.js'
 import BaseButton from '~/components/atoms/BaseButton.vue'
+import BaseSpinner from '~/components/atoms/BaseSpinner.vue'
 import LessonCard from '~/components/molecules/LessonCard.vue'
 
+const loading = ref(false)
+
 // レッスン画面を初めて開いたときに一覧を読み込む（初期ロードを軽くするため遅延）。
-watch(() => ui.lessonPageOpen, open => { if (open) ensureLessons() })
+// 取得が終わるまでスピナーを出す（loadLessons は失敗しても throw せず空で返す）。
+watch(() => ui.lessonPageOpen, async open => {
+  if (!open) return
+  loading.value = true
+  try { await ensureLessons() } finally { loading.value = false }
+})
 
 async function onStart(lesson) {
   // 開始すると現在の描画は消えるため確認する（ヘッダーのリサイズと同様の作法）
@@ -24,7 +32,10 @@ async function onStart(lesson) {
         <p>お題を見ながらドット絵を描いて練習しましょう。レベルごとにキャンバスサイズと使える色が固定されます。</p>
       </header>
 
-      <div class="lesson-grid">
+      <div v-if="loading" class="lesson-loading">
+        <BaseSpinner :size="30" />
+      </div>
+      <div v-else class="lesson-grid">
         <LessonCard
           v-for="l in LESSONS"
           :key="l.id"
@@ -71,6 +82,7 @@ async function onStart(lesson) {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
 }
+.lesson-loading { display: flex; justify-content: center; padding: 60px 0; }
 #lpage-close { position: fixed; top: 12px; right: 16px; padding: 5px 14px; z-index: 1; }
 
 @media (max-width: 820px) {

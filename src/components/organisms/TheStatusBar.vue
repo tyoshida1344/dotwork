@@ -1,17 +1,56 @@
 <script setup>
 import { S } from '~/core/state.js'
 import { ui } from '~/core/ui.js'
-import { zoomCanvas } from '~/core/canvas.js'
+import { resetCanvas, zoomCanvas, drawPx } from '~/core/canvas.js'
+import { clearAll } from '~/core/history.js'
+import { lessonState } from '~/core/lessons.js'
+import { showConfirm } from '~/core/dialog.js'
 import BaseButton from '~/components/atoms/BaseButton.vue'
+
+// 元に戻す/やり直すはキーボードと同じ経路を使うため、EditorView のハンドラへ委譲する。
+const emit = defineEmits(['undo', 'redo'])
 
 const TOOL_NAMES = {
   pencil: 'ペン', eraser: '消しゴム', line: '直線',
   bucket: '塗りつぶし', picker: 'スポイト', dither: 'ディザ',
 }
+
+async function onSizeChange(e) {
+  const n = parseInt(e.target.value)
+  if (!await showConfirm(`${n}×${n} にリサイズしますか？現在の描画は消去されます。`)) {
+    e.target.value = String(S.cols); return
+  }
+  resetCanvas(n)
+}
+
+async function onClear() {
+  if (!await showConfirm('キャンバスを消去しますか？描いた内容はすべて消えます。')) return
+  clearAll()
+  drawPx()
+}
 </script>
 
 <template>
   <div id="status">
+    <div class="sactions">
+      <span class="slbl">SIZE</span>
+      <select
+        :value="String(S.cols)"
+        :disabled="!!lessonState.active"
+        :title="lessonState.active ? 'レッスン中はサイズが固定されます' : ''"
+        @change="onSizeChange"
+      >
+        <option value="16">16×16</option>
+        <option value="24">24×24</option>
+        <option value="32">32×32</option>
+        <option value="48">48×48</option>
+      </select>
+      <BaseButton title="Ctrl+Z" @click="emit('undo')">↩<span class="albl"> 元に戻す</span></BaseButton>
+      <BaseButton title="Ctrl+Y" @click="emit('redo')">↪<span class="albl"> やり直す</span></BaseButton>
+      <BaseButton variant="danger" @click="onClear">✕<span class="albl"> クリア</span></BaseButton>
+    </div>
+    <div class="ssep"></div>
+
     <span style="min-width:60px">
       {{ ui.hoverPos ? `${ui.hoverPos[0]}, ${ui.hoverPos[1]}` : '–, –' }}
     </span>
@@ -50,16 +89,24 @@ const TOOL_NAMES = {
   color: var(--muted);
   font-size: 13px;
 }
-.zctrl { display: flex; align-items: center; gap: 3px; }
+/* 編集操作（SIZE・元に戻す/やり直す・クリア）。詰めた小サイズで並べる。 */
+.sactions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.slbl { color: var(--muted); font-size: 12px; }
+.sactions select { font-size: 13px; padding: 3px 6px; }
+.sactions :deep(.btn) { font-size: 13px; padding: 3px 8px; }
+.ssep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+
+/* ズームは右端へ寄せる */
+.zctrl { display: flex; align-items: center; gap: 3px; margin-left: auto; flex-shrink: 0; }
 /* ズームの ± は固定サイズの小ボタン。BaseButton の既定サイズより優先させるため
    :deep() で内側の button を直接指定する（特異度で勝たせる）。 */
 .zctrl :deep(button) { width: 22px; height: 20px; padding: 0; font-size: 17px; line-height: 1; }
 
 @media (max-width: 820px) {
-  /* 情報は省略表示・ズームは右に固定で大きく */
+  /* 情報は省略表示・ズームは右に固定で大きく。操作ボタンはアイコンのみに詰める。 */
   #status { gap: 10px; font-size: 12px; padding: 0 10px; }
   #status > span { min-width: 0 !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .zctrl { margin-left: auto; flex-shrink: 0; }
+  .albl, .slbl { display: none; }
   .zctrl :deep(button) { width: 36px; height: 28px; font-size: 20px; }
   .rtool { display: none; }
 }
