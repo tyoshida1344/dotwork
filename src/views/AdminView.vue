@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { isSupabaseConfigured } from '~/core/supabase.js'
 import { signIn, signOut, getSession } from '~/core/lessonsApi.js'
 import AdminLogin from '~/components/organisms/AdminLogin.vue'
+import BaseButton from '~/components/atoms/BaseButton.vue'
 
 // /admin のシェル：Supabase 設定チェック・ログイン・共通ヘッダー・ログアウトを担い、
 // 各管理機能（レッスン管理など）は子ルート（<router-view>）に表示する。
@@ -59,7 +60,7 @@ async function handleLogout() {
       <header class="admin-head">
         <router-link class="admin-logo" to="/admin">DOTWORK ADMIN</router-link>
         <div class="admin-head-actions">
-          <button @click="handleLogout">ログアウト</button>
+          <BaseButton @click="handleLogout">ログアウト</BaseButton>
         </div>
       </header>
 
@@ -67,3 +68,10 @@ async function handleLogout() {
     </div>
   </div>
 </template>
+
+<style scoped>
+#admin { position: fixed; inset: 0; background: var(--bg); overflow-y: auto; color: var(--text); }
+.admin-notice { max-width: 520px; margin: 80px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.admin-notice p { font-size: 14px; line-height: 1.7; }
+.admin-main { max-width: 820px; margin: 0 auto; padding: 28px 22px 60px; }
+</style>

@@ -2,6 +2,9 @@
 import { reactive, ref, watch, computed, onBeforeUnmount } from 'vue'
 import { uploadRefImage, deleteRefImage } from '~/core/lessonsApi.js'
 import { extractPaletteFromImage } from '~/core/palette.js'
+import BaseButton from '~/components/atoms/BaseButton.vue'
+import BaseModal from '~/components/templates/BaseModal.vue'
+import LessonCard from '~/components/molecules/LessonCard.vue'
 
 const props = defineProps({
   // 編集対象のレッスン。新規作成時は空テンプレートを渡す。
@@ -168,82 +171,103 @@ function onCancel() {
 </script>
 
 <template>
-  <div class="lf-backdrop" @click.self="onCancel">
+  <BaseModal open align="start" @close="onCancel">
     <div class="lf-modal">
       <div class="lf-edit">
         <h2 class="lf-head">{{ form.id ? 'レッスンを編集' : '新しいレッスン' }}</h2>
 
         <div class="lf-row">
-          <label class="admin-field lf-narrow">
-            <span>レベル</span>
+          <BaseField label="レベル" class="lf-narrow">
             <input v-model.number="form.level" type="number" min="1">
-          </label>
-          <label class="admin-field lf-narrow">
-            <span>サイズ</span>
+          </BaseField>
+          <BaseField label="サイズ" class="lf-narrow">
             <select v-model.number="form.size">
               <option v-for="s in SIZES" :key="s" :value="s">{{ s }}×{{ s }}</option>
             </select>
-          </label>
+          </BaseField>
         </div>
 
-        <label class="admin-field">
-          <span>タイトル</span>
+        <BaseField label="タイトル">
           <input v-model="form.title" type="text" placeholder="例: 描き写しに慣れる">
-        </label>
+        </BaseField>
 
-        <label class="admin-field">
-          <span>説明</span>
+        <BaseField label="説明">
           <textarea v-model="form.desc" rows="3" placeholder="レッスンの説明文"></textarea>
-        </label>
+        </BaseField>
 
-        <div class="admin-field">
-          <span>パレット（使用する色）</span>
+        <BaseField tag="div" label="パレット（使用する色）">
           <div class="lf-palette">
             <div v-for="(c, i) in form.palette" :key="i" class="lf-color">
               <input type="color" :value="HEX_RE.test(c) ? c : '#000000'" @input="form.palette[i] = $event.target.value">
               <input class="lf-hex" type="text" v-model="form.palette[i]" maxlength="7">
-              <button type="button" class="admin-move" :disabled="i === 0" title="上へ" @click="moveColor(i, -1)">▲</button>
-              <button type="button" class="admin-move" :disabled="i === form.palette.length - 1" title="下へ" @click="moveColor(i, 1)">▼</button>
-              <button type="button" class="lf-x" :disabled="form.palette.length <= 1" @click="removeColor(i)">✕</button>
+              <BaseButton compact :disabled="i === 0" title="上へ" @click="moveColor(i, -1)">▲</BaseButton>
+              <BaseButton compact :disabled="i === form.palette.length - 1" title="下へ" @click="moveColor(i, 1)">▼</BaseButton>
+              <BaseButton compact :disabled="form.palette.length <= 1" @click="removeColor(i)">✕</BaseButton>
             </div>
           </div>
-          <button type="button" style="margin-top:6px" @click="addColor">＋ 色を追加</button>
-        </div>
+          <BaseButton style="margin-top:6px" @click="addColor">＋ 色を追加</BaseButton>
+        </BaseField>
 
-        <div class="admin-field">
-          <span>お題画像（PNG / SVG・2MBまで・任意／PNG は色を自動抽出）</span>
+        <BaseField tag="div" label="お題画像（PNG / SVG・2MBまで・任意／PNG は色を自動抽出）">
           <input type="file" accept="image/png,image/svg+xml" @change="onFile">
           <span v-if="pendingFile" class="lf-hint">選択済み：保存時にアップロードされます</span>
-        </div>
+        </BaseField>
 
         <p v-if="error || submitError" class="admin-error">{{ error || submitError }}</p>
 
         <div class="lf-actions">
-          <button :disabled="uploading || saving" @click="onCancel">キャンセル</button>
-          <button class="btn-a" :disabled="uploading || saving" @click="onSubmit">
+          <BaseButton :disabled="uploading || saving" @click="onCancel">キャンセル</BaseButton>
+          <BaseButton variant="accent" :disabled="uploading || saving" @click="onSubmit">
             {{ uploading ? 'アップロード中…' : saving ? '保存中…' : '保存' }}
-          </button>
+          </BaseButton>
         </div>
       </div>
 
       <!-- ライブプレビュー：レッスン選択カードの見た目 -->
       <div class="lf-preview">
         <span class="lf-preview-label">プレビュー</span>
-        <article class="lesson-card">
-          <div class="lesson-thumb">
-            <img v-if="previewUrl" :src="previewUrl" :alt="form.title">
-            <div v-else class="lf-noimg">画像なし（任意）</div>
-          </div>
-          <div class="lesson-body">
-            <div class="lesson-meta">
-              <span class="lesson-lv">Lv.{{ form.level }}</span>
-              <span class="lesson-spec">{{ form.size }}×{{ form.size }} ・ {{ form.palette.length }}色</span>
-            </div>
-            <h3 class="lesson-title">{{ form.title || '（タイトル未入力）' }}</h3>
-            <p class="lesson-desc">{{ form.desc || '（説明未入力）' }}</p>
-          </div>
-        </article>
+        <LessonCard
+          :level="form.level"
+          :size="form.size"
+          :colors="form.palette.length"
+          :title="form.title || '（タイトル未入力）'"
+          :desc="form.desc || '（説明未入力）'"
+          :src="previewUrl"
+        >
+          <template #empty><div class="lf-noimg">画像なし（任意）</div></template>
+        </LessonCard>
       </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
+
+<style scoped>
+.lf-modal {
+  width: 100%; max-width: 760px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  overflow: hidden;
+}
+.lf-edit { padding: 20px; }
+.lf-head { font-size: 16px; color: var(--text); margin-bottom: 16px; }
+.lf-row { display: flex; gap: 10px; }
+.lf-row .field { flex: 1; }
+.lf-narrow { max-width: 96px; }
+.lf-palette { display: flex; flex-direction: column; gap: 6px; }
+.lf-color { display: flex; align-items: center; gap: 6px; }
+.lf-color input[type="color"] { width: 34px; height: 30px; padding: 0; border: 1px solid var(--border); border-radius: 3px; background: none; cursor: pointer; }
+.lf-hex { flex: 1; }
+.lf-hint { font-size: 12px; color: var(--muted); }
+.lf-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.lf-preview { background: var(--bg); border-left: 1px solid var(--border); padding: 20px; }
+.lf-preview-label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 10px; }
+.lf-noimg { color: var(--muted); font-size: 13px; padding: 40px 0; }
+
+@media (max-width: 820px) {
+  .lf-modal { grid-template-columns: 1fr; }
+  .lf-preview { border-left: none; border-top: 1px solid var(--border); }
+}
+</style>

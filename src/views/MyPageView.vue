@@ -7,7 +7,9 @@ import { worksState, openWork } from '~/core/works.js'
 import { exportPixelsPNG } from '~/core/export.js'
 import { EXPORT_SCALES } from '~/core/ui.js'
 import { ensureLessons } from '~/core/lessons.js'
+import { showAlert, showConfirm, showPrompt } from '~/core/dialog.js'
 import WorkThumb from '~/components/atoms/WorkThumb.vue'
+import BaseButton from '~/components/atoms/BaseButton.vue'
 
 // 保存した作品の一覧・再開・整理。未ログインではルートガードが弾くので、ここは常にログイン済み。
 const router = useRouter()
@@ -73,21 +75,21 @@ function toFilename(title) {
 }
 
 async function onEdit(w) {
-  if (!confirm(`「${w.title}」を編集しますか？エディタの現在の描画は置き換わります。`)) return
+  if (!await showConfirm(`「${w.title}」を編集しますか？エディタの現在の描画は置き換わります。`)) return
   try {
     await openWork(w)
     router.push('/')
   } catch (e) {
-    alert(e.message || e)
+    showAlert(e.message || e)
   }
 }
 
 async function onRename(w) {
-  const title = prompt('新しいタイトル', w.title)
+  const title = await showPrompt('新しいタイトル', w.title)
   if (title == null) return
   const t = title.trim()
-  if (!t) { alert('タイトルを入力してください。'); return }
-  if (t.length > 60) { alert('タイトルは60文字までです。短くしてください。'); return }
+  if (!t) { showAlert('タイトルを入力してください。'); return }
+  if (t.length > 60) { showAlert('タイトルは60文字までです。短くしてください。'); return }
   if (t === w.title) return
 
   busyId.value = w.id
@@ -97,7 +99,7 @@ async function onRename(w) {
     w.updatedAt = saved.updatedAt
     if (worksState.currentId === w.id) worksState.currentTitle = saved.title
   } catch (e) {
-    alert(e.message || e)
+    showAlert(e.message || e)
   } finally {
     busyId.value = null
   }
@@ -105,7 +107,7 @@ async function onRename(w) {
 
 async function onDuplicate(w) {
   if (full.value) {
-    alert(`保存できる作品は ${WORK_LIMIT} 件までです。不要な作品を削除してください。`)
+    showAlert(`保存できる作品は ${WORK_LIMIT} 件までです。不要な作品を削除してください。`)
     return
   }
   busyId.value = w.id
@@ -113,7 +115,7 @@ async function onDuplicate(w) {
     const copy = await createWork({ ...w, title: `${w.title} のコピー`.slice(0, 60) })
     works.value.unshift(copy)
   } catch (e) {
-    alert(e.message || e)
+    showAlert(e.message || e)
   } finally {
     busyId.value = null
   }
@@ -124,7 +126,7 @@ function onExport(w) {
 }
 
 async function onDelete(w) {
-  if (!confirm(`「${w.title}」を削除しますか？この操作は取り消せません。`)) return
+  if (!await showConfirm(`「${w.title}」を削除しますか？この操作は取り消せません。`)) return
   busyId.value = w.id
   try {
     await deleteWork(w.id)
@@ -135,7 +137,7 @@ async function onDelete(w) {
       worksState.currentTitle = ''
     }
   } catch (e) {
-    alert(e.message || e)
+    showAlert(e.message || e)
   } finally {
     busyId.value = null
   }
@@ -157,8 +159,8 @@ async function onLogout() {
           <span class="mp-logo">MY PAGE</span>
         </div>
         <div class="mp-head-actions">
-          <router-link class="hbtn" to="/">← エディタへ戻る</router-link>
-          <button @click="onLogout">ログアウト</button>
+          <BaseButton tag="router-link" to="/">← エディタへ戻る</BaseButton>
+          <BaseButton @click="onLogout">ログアウト</BaseButton>
         </div>
       </header>
 
@@ -189,18 +191,18 @@ async function onLogout() {
               <p class="work-date">{{ formatDate(w.updatedAt) }}</p>
 
               <div class="work-actions">
-                <button class="btn-a work-edit" :disabled="busyId === w.id" @click="onEdit(w)">▸ 編集</button>
+                <BaseButton variant="accent" class="work-edit" :disabled="busyId === w.id" @click="onEdit(w)">▸ 編集</BaseButton>
 
                 <!-- 主操作以外は ⋯ にまとめる。開閉は openMenuId で1つだけに絞る -->
                 <div class="work-menu">
-                  <button
-                    class="work-menu-btn"
+                  <BaseButton
+                    compact
                     :disabled="busyId === w.id"
                     :aria-expanded="openMenuId === w.id"
                     aria-haspopup="menu"
                     title="その他の操作"
                     @click.stop="toggleMenu(w.id)"
-                  >⋯</button>
+                  >⋯</BaseButton>
 
                   <div v-if="openMenuId === w.id" class="work-menu-list" role="menu" @click.stop>
                     <button role="menuitem" @click="pick(onRename, w)">名前を変更</button>
@@ -232,3 +234,55 @@ async function onLogout() {
     </div>
   </div>
 </template>
+
+<style scoped>
+#mypage { position: fixed; inset: 0; background: var(--bg); overflow-y: auto; color: var(--text); }
+.mp-inner { max-width: 920px; margin: 0 auto; padding: 28px 22px 60px; }
+.mp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.mp-logo { font-family: 'Silkscreen', monospace; color: var(--amber); font-size: 20px; letter-spacing: 1px; }
+.mp-head-actions { display: flex; gap: 8px; align-items: center; }
+
+.mp-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.mp-count { font-size: 13px; color: var(--muted); }
+.mp-count.full { color: var(--amber); }
+.mp-note { color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+.mp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+/* ⋯ メニューをカード外へはみ出させるため overflow は切らない。角丸はサムネイル側で受け持つ。 */
+.work-card { display: flex; flex-direction: column; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
+.work-thumb { background: var(--checker) 0 / 16px 16px; padding: 16px; border-radius: 7px 7px 0 0; }
+.work-body { padding: 12px 13px 13px; display: flex; flex-direction: column; flex: 1; }
+.work-title { font-size: 15px; color: var(--text); word-break: break-word; }
+.work-meta { font-size: 12px; color: var(--muted); margin-top: 5px; }
+.work-date { font-size: 12px; color: var(--muted); margin-top: 2px; margin-bottom: 11px; }
+.work-actions { display: flex; align-items: center; gap: 6px; margin-top: auto; }
+.work-actions button { font-size: 13px; padding: 4px 8px; }
+/* 作品カードの操作ボタン（編集・⋯）は一覧で少し小さめ。BaseButton の既定サイズより優先させる。 */
+.work-actions :deep(.btn) { font-size: 13px; padding: 4px 8px; }
+.work-edit { flex: 1; }
+
+/* ⋯ ドロップダウン（トリガーは BaseButton compact、項目は素の button のメニュー） */
+.work-menu { position: relative; flex-shrink: 0; }
+.work-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 172px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  z-index: var(--z-dropdown);
+}
+.work-menu-list button { width: 100%; text-align: left; background: none; border: none; border-radius: 4px; padding: 7px 9px; }
+.work-menu-list button:hover:not(:disabled) { background: var(--bg3); color: var(--amber); }
+.work-menu-export { display: flex; align-items: center; gap: 4px; }
+.work-menu-export button { flex: 1; width: auto; }
+.work-menu-export select { flex-shrink: 0; padding: 4px 6px; }
+.work-menu-sep { height: 1px; background: var(--border); margin: 4px 2px; }
+.work-menu-danger { color: #dc2626; }
+.work-menu-danger:hover:not(:disabled) { background: #fef2f2; color: #dc2626; }
+</style>

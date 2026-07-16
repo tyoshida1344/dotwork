@@ -95,3 +95,27 @@ function removeSaved(c) {
     </div>
   </SidePanel>
 </template>
+
+<style scoped>
+.bg-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
+.bg-sw {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.bg-sw:hover { border-color: var(--amber); }
+.bg-sw.sel { border-color: var(--bg2); box-shadow: 0 0 0 2px var(--amber); }
+.bg-checker { background: var(--checker) 0 / 10px 10px; }
+.bg-custom {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 13px; line-height: 1;
+}
+.bg-custom input[type=color] {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; border: none; padding: 0;
+}
+</style>

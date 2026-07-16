@@ -22,16 +22,18 @@
 ```
 src/
   main.js / App.vue / router.js  ← エントリ、<router-view>、ルート定義（/ と /mypage と /admin＋子ルート。/mypage・/admin は遅延ロード、/admin は直リンクのみ）
-  style.css                      ← グローバル CSS（:root に CSS 変数）
+  style.css                      ← グローバル CSS（CSS 変数・リセット・z-index/チェッカー・複数画面で共有するクラスのみ。部品固有・#layout・ガイド本文は各 .vue の <style scoped>）
   core/        ← 状態とロジック（Vanilla JS）: state / palette / canvas / tools / history / export / ui
                  ＋ レッスン管理まわり: lessons / supabase / lessonsApi
                  ＋ 学習者アカウントと作品: auth / works / worksApi
-  views/       ← EditorView（エディタ本体）/ MyPageView（/mypage: 保存した作品の一覧）
+                 ＋ 共通ダイアログ: dialog（ネイティブ alert/confirm/prompt の置き換え。Promise を返す）
+  views/       ← pages 層（ルートコンポーネント）: EditorView（エディタ本体）/ MyPageView（/mypage: 保存した作品の一覧）
                  ＋ AdminView（/admin のシェル: 認証＋ヘッダー）/ AdminHome（管理トップのメニュー）/ LessonAdmin（レッスン管理）
-  components/  ← The*（Header/Toolbar/Canvas/Sidebar/StatusBar）、SidePanel、各オーバーレイ（Guide/Lesson/ImageImport）
-    panels/    ← サイドバーの各パネル（Color / Palette / Enhance / Guides / Background / RefImage / Export）
-    mypage/    ← WorkThumb（作品サムネイルをピクセルから描画）
-    admin/     ← AdminLogin / LessonForm
+  components/  ← atomic デザインで階層化（Base* は汎用の基底部品、ドメイン部品は従来名を維持。詳細はアーキテクチャ節）
+    atoms/       ← BaseButton / ToolButton / WorkThumb（作品サムネイルをピクセルから描画）
+    molecules/   ← SidePanel（セクション枠）/ BaseField（ラベル＋入力）/ SliderRow（ラベル＋スライダー＋値）/ LessonCard（お題カード。選択画面と編集プレビューで共用）
+    organisms/   ← The*（Header/Toolbar/Canvas/Sidebar/StatusBar）、各パネル（Color/Palette/Enhance/Guides/Background/RefImage/Export）、オーバーレイ（GuidePage/LessonPage/ImageImportModal）、管理（AdminLogin/LessonForm）、BaseDialog
+    templates/   ← レイアウトの器（BaseModal＝中央/上寄せモーダルの共通枠）
 supabase/migrations/  ← DB マイグレーション（スキーマ・RLS・バケット・RPC・管理者アカウント admins/admin_sessions／既定レッスンのシード／作品 works）
 supabase/functions/   ← Edge Function（admin: 管理者認証・レッスン/お題画像の書き込み。service_role）
 supabase/config.toml  ← ローカルスタック設定（[auth.external.google] を含む。本番には反映されない）
@@ -39,6 +41,20 @@ supabase/config.toml  ← ローカルスタック設定（[auth.external.google
 ```
 
 ## アーキテクチャ
+
+### UI コンポーネント設計（atomic デザイン）
+
+UI 部品は **atomic デザイン**で階層化する。層は `components/{atoms,molecules,organisms,templates}` ＋ pages（`views/`）。
+
+- **層の分け方**：atoms＝これ以上分解しない基底部品（`BaseButton` / `ToolButton` / `WorkThumb`）、molecules＝atoms の小さな組み合わせ（`SidePanel` ほか）、organisms＝画面の意味あるまとまり（`The*`・各パネル・フォーム・オーバーレイ内容・`BaseDialog`）、templates＝レイアウトの器（`BaseModal` など。中身はスロット）、pages＝ルートコンポーネント（`views/`）。
+- **命名**：汎用の基底部品は Vue 公式スタイルガイドに従い **`Base*`**（`BaseButton` / `BaseModal` / `BaseDialog`…）。ドメイン固有部品（`The*`・各パネル・`WorkThumb`・カード類）は従来名のまま。
+- **スタイルの置き場**：部品固有の見た目は各 `.vue` の **`<style scoped>`** に置く。`style.css` は **CSS 変数・リセット（`body` 等）・z-index スケール・チェッカー背景**、button/select の下地、複数画面で共有する管理画面クラス（`.admin-logo`/`.admin-head`/`.admin-head-actions` 等）とエラー表示（`.admin-error`/`.mp-error`）に絞る。`#layout` グリッドは `EditorView`、ガイド本文（`#gcontent`。中身が `v-html` のため `:deep()` で当てる）は `GuidePage` の scoped に置く。新規・改修時は原則 scoped 側へ寄せる。親から子部品のルート要素を上書きする時や `v-html` の中身を当てる時だけ `:deep()` を使う（例：`TheStatusBar` のズームボタン、`SliderRow`/`BaseField` のスロット入力、`GuidePage` の本文）。
+
+**ボタンのバリアント（`BaseButton`）**：props は `variant`（`default`/`accent`/`teal`/`danger`/`subtle`）・`block`（幅いっぱい）・`compact`（詰めた小ボタン）・`active`（トグルのオン表示）・`loading`（処理中は disabled＋`loadingText` に差し替え）・`tag="router-link"`（リンクをボタン見た目に。旧 `.hbtn` / `.admin-btn` を一本化）。**どのバリアントをいつ使うか（主操作＝アンバー／破壊的＝赤 など）は README「UI／デザイン方針」**。ツールバーの状態表示（L/R バッジ・アクティブ枠）は `ToolButton` が props で吸収する。
+
+**z-index スケール**（`:root` の CSS 変数。下から上へ）：`--z-canvas-bg/px/grid`（1/2/3）＜ `--z-dropdown`（作品カードの ⋯）＜ `--z-tooltip` ＜ `--z-drawer-backdrop`/`--z-drawer`（スマホのサイドドロワー）＜ `--z-overlay`（全画面ページ）＜ `--z-modal`（モーダル）＜ `--z-dialog`（共通ダイアログ）。新しい重なりはこのスケールから選ぶ。
+
+**共通ダイアログ（core/dialog.js ＋ organisms/BaseDialog.vue）**：ネイティブの `alert`/`confirm`/`prompt` は使わず、`showAlert` / `showConfirm` / `showPrompt`（Promise を返す）で共通ダイアログを開く。`BaseDialog` は `App.vue` に1つだけ置き、`--z-dialog` で最前面に出す。文言は呼び出し側がそのまま渡す（`.claude/rules/ui-copy.md` に従う）。
 
 ### 状態管理（state.js）
 
@@ -50,7 +66,7 @@ supabase/config.toml  ← ローカルスタック設定（[auth.external.google
 
 ### ルーティングとレッスン管理（router.js / lessons.js / lessonsApi.js / supabase.js）
 
-`vue-router`（history モード）。`/` = `EditorView`（エディタ本体）。`/mypage` = `MyPageView`（遅延ロード・ログイン必須。`beforeEnter` が未ログインならエディタへ戻す）。`/admin` = `AdminView`（遅延ロード）で、これは **DOTWORK ADMIN の「シェル」**（Supabase 設定チェック・ログイン・共通ヘッダー・ログアウト）。管理機能そのものは子ルートに分離する: `/admin`（index）= `AdminHome`（管理トップのメニュー）、`/admin/lessons` = `LessonAdmin`（レッスン管理）。今後の管理機能は子ルート＋`AdminHome` のメニュー項目として足す。`/admin` は UI 上の導線を置かず**直リンクのみ**で到達し、エディタへ戻る導線も持たない。`App.vue` は `<router-view>` だけ。SPA フォールバックは `netlify.toml` の redirect で対応。
+`vue-router`（history モード）。`/` = `EditorView`（エディタ本体）。`/mypage` = `MyPageView`（遅延ロード・ログイン必須。`beforeEnter` が未ログインならエディタへ戻す）。`/admin` = `AdminView`（遅延ロード）で、これは **DOTWORK ADMIN の「シェル」**（Supabase 設定チェック・ログイン・共通ヘッダー・ログアウト）。管理機能そのものは子ルートに分離する: `/admin`（index）= `AdminHome`（管理トップのメニュー）、`/admin/lessons` = `LessonAdmin`（レッスン管理）。今後の管理機能は子ルート＋`AdminHome` のメニュー項目として足す。`/admin` は UI 上の導線を置かず**直リンクのみ**で到達し、エディタへ戻る導線も持たない。`App.vue` は `<router-view>` と全ルート共通の `BaseDialog` を置く。SPA フォールバックは `netlify.toml` の redirect で対応。
 
 レッスンの正データは **Supabase**（`lessons` テーブル＋公開バケット `lesson-refs`）。`supabase.js` は env（`VITE_SUPABASE_*`）から anon クライアントを作り、未設定なら `null`。`lessonsApi.js` は、**読み取り**（`fetchLessons`）を anon で直接行い、**書き込み・お題画像・認証**は Edge Function `admin` 経由で行う。DB 列（`id`/`description`/`deleted_at`…）とフロントの形（`id`/`desc`…）を相互変換する。レッスンの削除は物理削除ではなく `deleted_at` を立てる**論理削除**で、一覧は `deleted_at is null` のみ取得する。
 
@@ -114,11 +130,10 @@ App.vue が「undo() 成功 → drawPx()」の順で呼ぶ。
 
 ## テーマ・フォント
 
-- 白基調テーマ。`style.css` の `:root` ブロックで CSS 変数管理。
-- 面の階層: `--bg` 薄グレー `#f3f4f6`（アプリ／キャンバス領域）＞ `--bg2` 白 `#ffffff`（ヘッダー・ツールバー・サイドバー・ステータス）＞ `--bg3` `#f9fafb`（ボタン・入力）。境界線 `--border` `#e5e7eb`、本文 `--text` `#374151`、補助 `--muted` `#6b7280`
-- アクセント: アンバー `--amber` `#e08a1e`（鮮やかなアンバー）、副次: ティール `--teal` `#0d9488`。アクティブ表示の淡い塗りは `--amber-soft` / `--teal-soft`、アクセント塗りボタン上の文字は `--on-accent`（白）
-- フォント: **Silkscreen**（見出し・ロゴ）＋ **DM Mono**（UI）、Google Fonts から読み込み
-- 補助線の色: ティール `#0d9488`（横分割）、ピンク `#f06080`（縦分割）。グリッド線・ホバー枠は白背景向けに `rgba(0,0,0,…)` で描画（`canvas.js`）。透過チェッカーは薄グレー（`drawBg` / `.bg-checker` / ステータスバー）
+配色・フォント・ボタンのバリアントの使い分けなど**デザイン方針は README「UI／デザイン方針」**にまとめる。ここでは実装の要点のみ：
+
+- CSS 変数は `style.css` の `:root` で管理（面 `--bg`/`--bg2`/`--bg3`、境界 `--border`、本文 `--text`、補助 `--muted`、アクセント `--amber`/`--teal`＋淡い塗り `--amber-soft`/`--teal-soft`、`--on-accent`、チェッカー `--checker`）。
+- 補助線（横＝ティール `#0d9488` / 縦＝ピンク `#f06080`）・グリッド線・ホバー枠・透過チェッカーは `canvas.js` で描画（`drawBg` / `drawGrid` ほか。白背景向けに `rgba(0,0,0,…)`）。
 
 ## ロードマップ（未実装）
 

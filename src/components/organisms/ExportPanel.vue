@@ -3,6 +3,7 @@ import { S } from '~/core/state.js'
 import { ui, EXPORT_SCALES, setExportScale } from '~/core/ui.js'
 import { exportPNG } from '~/core/export.js'
 import SidePanel from '~/components/molecules/SidePanel.vue'
+import BaseButton from '~/components/atoms/BaseButton.vue'
 
 // 書き出し倍率は EXPORT パネルで選べる（ui.exportScale）。ファイル出力はヘッダーの「保存」（＝アカウントへ作品を保存）と紛らわしいため、このパネルに分けている。
 </script>
@@ -18,7 +19,14 @@ import SidePanel from '~/components/molecules/SidePanel.vue'
         <option v-for="s in EXPORT_SCALES" :key="s" :value="String(s)">{{ s }}x</option>
       </select>
     </label>
-    <button class="abtn btn-a" @click="exportPNG">⤓ PNG を書き出す</button>
+    <BaseButton block variant="accent" @click="exportPNG">⤓ PNG を書き出す</BaseButton>
     <p class="exp-note">{{ S.cols * ui.exportScale }}×{{ S.rows * ui.exportScale }} px</p>
   </SidePanel>
 </template>
+
+<style scoped>
+/* 倍率セレクトと出力サイズの注記 */
+.exp-scale { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+.exp-scale select { margin-left: auto; padding: 4px 6px; }
+.exp-note { color: var(--muted); font-size: 12px; text-align: center; }
+</style>

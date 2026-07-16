@@ -1,5 +1,6 @@
 <script setup>
 import { S } from '~/core/state.js'
+import ToolButton from '~/components/atoms/ToolButton.vue'
 
 const TOOLS = [
   { id: 'pencil', icon: '✏',  key: 'B', label: 'ペン (B)' },
@@ -16,29 +17,56 @@ const hint = '左クリック＝左ボタン / 右クリック＝右ボタンに
 
 <template>
   <div id="tbar">
-    <div
+    <ToolButton
       v-for="t in TOOLS"
       :key="t.id"
-      class="tbtn"
-      :class="{ 'on-l': S.toolL === t.id, 'on-r': S.toolR === t.id }"
+      :hotkey="t.key"
+      :active-left="S.toolL === t.id"
+      :active-right="S.toolR === t.id"
       :title="`${t.label}\n${hint}`"
       @click="S.toolL = t.id"
       @contextmenu.prevent="S.toolR = t.id"
-    >
-      {{ t.icon }}<span class="tkey">{{ t.key }}</span>
-      <span v-if="S.toolL === t.id" class="tbadge tb-l">L</span>
-      <span v-if="S.toolR === t.id" class="tbadge tb-r">R</span>
-    </div>
+    >{{ t.icon }}</ToolButton>
 
     <div class="tsep"></div>
 
-    <div
-      class="tbtn"
-      :class="{ 'sym-on': S.sym }"
+    <ToolButton
+      :active-sym="S.sym"
+      hotkey="S"
       title="左右対称 (S)"
       @click="S.sym = !S.sym"
-    >
-      ⟺<span class="tkey">S</span>
-    </div>
+    >⟺</ToolButton>
   </div>
 </template>
+
+<style scoped>
+#tbar {
+  grid-area: tbar;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 3px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.tsep { width: 30px; height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
+
+@media (max-width: 820px) {
+  /* 縦→横スクロールの帯に */
+  #tbar {
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 8px;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .tsep { width: 1px; height: 30px; margin: 0 4px; }
+}
+</style>
