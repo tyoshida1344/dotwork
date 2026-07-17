@@ -169,7 +169,7 @@ async function useAsReference(w) {
 
 /* 絞り込みバー */
 .gl-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.gl-search { flex: 1 1 220px; min-width: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text); font-size: 13px; }
+.gl-search { flex: 1 1 220px; min-width: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg3); color: var(--text); font-size: 13px; }
 .gl-filters select { padding: 6px 8px; }
 
 .gl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
