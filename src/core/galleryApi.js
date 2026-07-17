@@ -1,6 +1,6 @@
 import { supabase } from '~/core/supabase.js'
 
-// 公開ギャラリー（イシュー #5）の読み取り。worksApi.js は本人の作品 CRUD、こちらは
+// 公開ギャラリーの読み取り。worksApi.js は本人の作品 CRUD、こちらは
 // 全ユーザー横断の「公開中の作品」の読み取り専用。anon でも引ける（未ログイン閲覧のため）。
 // 投稿者名は profiles から付ける（works→profiles の外部キーは無いので別引きして結合する）。
 

@@ -10,7 +10,7 @@ import { lessonState, ensureLessons } from '~/core/lessons.js'
 
 // エディタの状態。アンドゥ履歴・PNG 書き出しには含めない揮発性状態。
 export const worksState = reactive({
-  currentId: null,      // 編集中の作品 id（マイページから開いた／保存済み）| null。null なら未保存の新規
+  currentId: null, // 編集中の作品 id（マイページから開いた／保存済み）| null。null なら未保存の新規
   currentTitle: '',
   saving: false,
 })
@@ -99,8 +99,8 @@ export function applyReferenceFromPixels(pixels, cols, rows) {
     const img = new Image()
     img.onload = () => {
       S.refImg = img
-      if (S.overlay <= 0) S.overlay = 0.5   // 全く見えない設定だったら見える濃さに戻す
-      ui.lessonOverlayOn = false            // 手動の参照画像扱い（お題オーバーレイではない）
+      if (S.overlay <= 0) S.overlay = 0.5 // 全く見えない設定だったら見える濃さに戻す
+      ui.lessonOverlayOn = false // 手動の参照画像扱い（お題オーバーレイではない）
       resolve()
     }
     img.onerror = () => resolve()
@@ -172,7 +172,7 @@ export async function restoreStashedEditor() {
   try {
     raw = sessionStorage.getItem(STASH_KEY)
     if (raw) sessionStorage.removeItem(STASH_KEY)
-  } catch { return false }   // sessionStorage 不可（プライベートモード等）
+  } catch { return false } // sessionStorage 不可（プライベートモード等）
   if (!raw) return false
 
   try {

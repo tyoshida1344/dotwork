@@ -19,9 +19,9 @@ const error = ref('')
 const selected = ref(null) // 詳細モーダルで開いている作品 | null
 
 // 絞り込み条件（すべて取得済みの一覧に対して画面側で効かせる）
-const keyword = ref('')      // タイトル・投稿者名の部分一致
+const keyword = ref('') // タイトル・投稿者名の部分一致
 const lessonFilter = ref('') // レッスン id（'' = すべて）
-const sizeFilter = ref('')   // キャンバス一辺（'' = すべて）
+const sizeFilter = ref('') // キャンバス一辺（'' = すべて）
 
 // 上限まで取れたら、それより古い公開作品は一覧に出ていない旨を知らせる
 const capped = computed(() => works.value.length >= GALLERY_LIMIT)

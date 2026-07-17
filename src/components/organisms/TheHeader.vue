@@ -12,7 +12,7 @@ async function onLogin() {
   try {
     await signInWithGoogle()
   } catch (e) {
-    clearStash()   // 遷移しなかったので、退避したスナップショットは捨てる
+    clearStash() // 遷移しなかったので、退避したスナップショットは捨てる
     showAlert(`ログインを開始できませんでした: ${e.message || e}`)
   }
 }
