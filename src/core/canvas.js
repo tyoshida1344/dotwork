@@ -68,9 +68,15 @@ export function drawBg() {
 export function drawPx() {
   pxX.clearRect(0, 0, _cvEl.width, _cvEl.height)
   if (S.refImg && S.overlay > 0) {
+    // ドット絵サイズ（小さい）の参照画像は最近傍で拡大して縁をくっきり保つ。
+    // 写真など大きい参照画像はスムージングのまま滑らかに表示する。
+    const rw = S.refImg.naturalWidth || S.refImg.width
+    const rh = S.refImg.naturalHeight || S.refImg.height
+    pxX.imageSmoothingEnabled = !(rw && rh && rw <= 64 && rh <= 64)
     pxX.globalAlpha = S.overlay
     pxX.drawImage(S.refImg, 0, 0, _cvEl.width, _cvEl.height)
     pxX.globalAlpha = 1
+    pxX.imageSmoothingEnabled = true
   }
   const c = S.cell
   for (let i = 0; i < S.pixels.length; i++) {
