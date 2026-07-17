@@ -1,9 +1,7 @@
 import { supabase } from '~/core/supabase.js'
 
 // ユーザーの同意記録（user_consents テーブル）の読み書き。
-// works／profiles と同じく anon クライアント＋ログイン中のセッションで直接行い、
-// 「本人の行だけ」は RLS（auth.uid() = user_id）が保証する。
-// 今は利用規約（terms）だけだが、将来プライバシーポリシー・Cookie 使用同意も同じ表に足せる。
+// anon クライアント＋ログイン中のセッションで直接行い、本人の行だけを RLS（auth.uid() = user_id）で絞る。
 const TABLE = 'user_consents'
 
 // 同意対象の文書種別。DB の CHECK（user_consents_document）と一致させること。
