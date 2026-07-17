@@ -64,7 +64,7 @@ const SECTIONS = [
     id: 'small', nav: '① 小さく始める', html: `
     <h2>① 小さく始める</h2>
     <p>ゲームのドット絵には <strong>16×16</strong> で十分です。このサイズでは1ドット1ドットが意味を持つため、悪い選択をしにくくなります。</p>
-    <p>ヘッダーの <strong>SIZE</strong> ドロップダウンでキャンバスサイズを選べます。書き出しの倍率は <strong>EXPORT</strong> パネルで <strong>1x〜16x</strong> から選べます。</p>
+    <p>画面下のバーにある <strong>SIZE</strong> ドロップダウンでキャンバスサイズを選べます。書き出しの倍率は <strong>EXPORT</strong> パネルで <strong>1x〜16x</strong> から選べます。</p>
     <p>まず16×16で始め、描くものが明確になったら32×32に移行しましょう。</p>
     `,
   },

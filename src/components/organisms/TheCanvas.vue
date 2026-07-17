@@ -7,6 +7,7 @@ import { applyDraw, floodFill, getFillArea, bres, idx, inB, setPx } from '~/core
 import { saveUndo } from '~/core/history.js'
 import { lessonState, exitLesson, setLessonOverlay } from '~/core/lessons.js'
 import BaseButton from '~/components/atoms/BaseButton.vue'
+import BaseSpinner from '~/components/atoms/BaseSpinner.vue'
 
 const bgcvEl   = ref(null)
 const cvEl     = ref(null)
@@ -171,11 +172,12 @@ watch(() => S.vDivUnits, () => drawHover(ui.hoverPos?.[0] ?? null, ui.hoverPos?.
 // 拡大する。お題画像は width:100% なのでパネルに追従して大きくなる。
 const laThumbEl = ref(null)   // 操作を受けるお題画像の枠
 const laScale = ref(1)        // パネルの拡大率（1=既定サイズ）
+const laImgLoading = ref(true) // お題画像（CDN）を読み込み中か
 const LA_SCALE_MIN = 1, LA_SCALE_MAX = 3
 const laPointers = new Map()  // ピンチ用に追跡中のポインタ
 
-// レッスンを切り替える／終了したら既定サイズに戻す（拡大率は保存しない）
-watch(() => lessonState.active, () => { laScale.value = 1 })
+// レッスンを切り替える／終了したら既定サイズに戻し、お題画像の読み込みをやり直す
+watch(() => lessonState.active, () => { laScale.value = 1; laImgLoading.value = true })
 
 function setLaScale(s) {
   laScale.value = Math.max(LA_SCALE_MIN, Math.min(LA_SCALE_MAX, s))
@@ -238,13 +240,21 @@ onMounted(() => {
         @pointercancel="onLaPointerup"
         @dblclick="setLaScale(1)"
       >
-        <img :src="lessonState.active.ref" :alt="lessonState.active.title">
+        <img
+          :src="lessonState.active.ref"
+          :alt="lessonState.active.title"
+          @load="laImgLoading = false"
+          @error="laImgLoading = false"
+        >
+        <BaseSpinner v-if="laImgLoading" class="la-spinner" :size="26" />
       </div>
       <h3 class="la-title">{{ lessonState.active.title }}</h3>
       <p class="la-desc">{{ lessonState.active.desc }}</p>
       <BaseButton
         block
         :active="ui.lessonOverlayOn"
+        :loading="ui.lessonOverlayLoading"
+        loading-text="読み込み中…"
         :title="ui.lessonOverlayOn ? '不透明度は REFERENCE パネルで調整できます' : ''"
         @click="onToggleLessonOverlay"
       >{{ ui.lessonOverlayOn ? '☑ 背景に重ねる' : '☐ 背景に重ねる' }}</BaseButton>
@@ -312,6 +322,7 @@ onMounted(() => {
 }
 .la-tag { color: var(--muted); font-size: 13px; }
 .la-thumb {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--checker) 0 / 14px 14px;
@@ -319,6 +330,8 @@ onMounted(() => {
   margin-bottom: 9px;
   touch-action: none;        /* ピンチ操作をブラウザのズーム/スクロールに奪われない */
 }
+/* お題画像の読み込み中に枠の中央へ重ねるスピナー */
+.la-spinner { position: absolute; inset: 0; margin: auto; }
 .la-thumb img {
   display: block;
   width: 100%;

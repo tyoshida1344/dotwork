@@ -1,29 +1,9 @@
 <script setup>
-import { S } from '~/core/state.js'
 import { ui } from '~/core/ui.js'
-import { resetCanvas, drawPx } from '~/core/canvas.js'
-import { clearAll } from '~/core/history.js'
-import { lessonState } from '~/core/lessons.js'
 import { isAuthAvailable, authState, signInWithGoogle } from '~/core/auth.js'
 import { worksState, saveWork, stashEditor, clearStash } from '~/core/works.js'
-import { showAlert, showConfirm } from '~/core/dialog.js'
+import { showAlert } from '~/core/dialog.js'
 import BaseButton from '~/components/atoms/BaseButton.vue'
-
-const emit = defineEmits(['undo', 'redo'])
-
-async function onSizeChange(e) {
-  const n = parseInt(e.target.value)
-  if (!await showConfirm(`${n}×${n} にリサイズしますか？現在の描画は消去されます。`)) {
-    e.target.value = String(S.cols); return
-  }
-  resetCanvas(n)
-}
-
-async function onClear() {
-  if (!await showConfirm('キャンバスを消去しますか？描いた内容はすべて消えます。')) return
-  clearAll()
-  drawPx()
-}
 
 // Google の認可画面へ出る前に、編集中のキャンバスを退避しておく
 // （リダイレクトでページごと捨てられるため）。戻り先で EditorView が復元する。
@@ -51,33 +31,14 @@ async function onSave(asNew = false) {
   <header id="hdr">
     <span id="logo">DOTWORK</span>
     <div class="vsep"></div>
-
-    <div class="hgrp">
-      <span class="hlbl">SIZE</span>
-      <select
-        :value="String(S.cols)"
-        :disabled="!!lessonState.active"
-        :title="lessonState.active ? 'レッスン中はサイズが固定されます' : ''"
-        @change="onSizeChange"
-      >
-        <option value="16">16×16</option>
-        <option value="24">24×24</option>
-        <option value="32">32×32</option>
-        <option value="48">48×48</option>
-      </select>
-    </div>
-
-    <div class="vsep"></div>
     <div class="spc"></div>
 
     <div class="hgrp hgrp-actions">
       <BaseButton variant="teal" class="mobile-only" title="パネルを開く" @click="ui.panelOpen = true">☰ パネル</BaseButton>
       <BaseButton variant="teal" @click="ui.lessonPageOpen = true">▦ レッスン</BaseButton>
       <BaseButton variant="teal" @click="ui.guidePageOpen = true">? ガイド</BaseButton>
-      <BaseButton title="Ctrl+Z" @click="emit('undo')">↩ 元に戻す</BaseButton>
-      <BaseButton title="Ctrl+Y" @click="emit('redo')">↪ やり直す</BaseButton>
-      <BaseButton variant="danger" @click="onClear">✕ クリア</BaseButton>
 
+      <!-- SIZE・元に戻す/やり直す・クリアはステータスバー（キャンバス下）に置く -->
       <!-- PNG 書き出しはサイドバーの EXPORT パネルに置く（「保存」との混同を避けるため） -->
       <!-- ログイン導線は Supabase 設定済みかつセッション確認後にだけ出す（表示のちらつき防止） -->
       <template v-if="isAuthAvailable && authState.ready">
@@ -125,7 +86,6 @@ async function onSave(asNew = false) {
 }
 .vsep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
 .hgrp { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.hlbl { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .spc { flex: 1; }
 
 @media (max-width: 820px) {

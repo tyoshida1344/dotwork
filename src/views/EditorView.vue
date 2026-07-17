@@ -44,14 +44,14 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
   <div id="layout">
-    <TheHeader
-      @undo="handleUndo"
-      @redo="handleRedo"
-    />
+    <TheHeader />
     <TheToolbar />
     <TheCanvas />
     <TheSidebar />
-    <TheStatusBar />
+    <TheStatusBar
+      @undo="handleUndo"
+      @redo="handleRedo"
+    />
     <GuidePage />
     <ImageImportModal />
     <LessonPage />

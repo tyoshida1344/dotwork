@@ -14,7 +14,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['save', 'cancel'])
 
-const SIZES = [16, 24, 32, 48]   // ヘッダーの SIZE セレクトと一致させる
+const SIZES = [16, 24, 32, 48]   // ステータスバーの SIZE セレクトと一致させる
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
 const ACCEPT = ['image/png', 'image/svg+xml']   // お題画像は PNG / SVG のみ
 const MAX_BYTES = 2 * 1024 * 1024                // 2MB 上限
