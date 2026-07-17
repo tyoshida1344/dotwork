@@ -13,7 +13,6 @@ import TheSidebar   from '~/components/organisms/TheSidebar.vue'
 import TheStatusBar from '~/components/organisms/TheStatusBar.vue'
 import GuidePage    from '~/components/organisms/GuidePage.vue'
 import ImageImportModal from '~/components/organisms/ImageImportModal.vue'
-import LessonPage    from '~/components/organisms/LessonPage.vue'
 
 const TOOL_KEYS = { B:'pencil', E:'eraser', L:'line', G:'bucket', I:'picker', D:'dither' }
 
@@ -25,7 +24,7 @@ function onKeydown(e) {
     return
   }
   const k = e.key.toUpperCase()
-  if (TOOL_KEYS[k]) S.toolL = TOOL_KEYS[k]   // キーは左ボタンのツールを切替
+  if (TOOL_KEYS[k]) S.toolL = TOOL_KEYS[k] // キーは左ボタンのツールを切替
   if (k === 'S') S.sym = !S.sym
 }
 
@@ -54,7 +53,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
     />
     <GuidePage />
     <ImageImportModal />
-    <LessonPage />
   </div>
 </template>
 
