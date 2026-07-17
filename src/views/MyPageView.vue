@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { signOut, fetchDisplayName, updateDisplayName } from '~/core/auth.js'
+import { signOut } from '~/core/auth.js'
+import { fetchDisplayName, updateDisplayName } from '~/core/profileApi.js'
 import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '~/core/worksApi.js'
 import { worksState, openWork } from '~/core/works.js'
 import { exportPixelsPNG } from '~/core/export.js'

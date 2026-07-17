@@ -91,34 +91,3 @@ export async function signOut() {
   await sb.auth.signOut()
   authState.user = null
 }
-
-// 表示名（profiles テーブル）。Google の名前は使わず、本人が決めた表示名をマイページに出す。
-// #5（投稿）で他人の投稿者名を見せるため、読み取りは全員可・書き込みは本人のみ（RLS）。
-// 初期行はサインアップ時に DB トリガーが既定名で作るので、通常は必ず1行ある。
-export async function fetchDisplayName() {
-  const sb = await getClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) throw new Error('ログインが必要です。')
-  const { data, error } = await sb
-    .from('profiles').select('display_name').eq('user_id', user.id).maybeSingle()
-  if (error) {
-    console.warn('[auth] 表示名の取得に失敗しました。', error)
-    throw new Error('表示名を読み込めませんでした。時間をおいて再度お試しください。')
-  }
-  return data?.display_name ?? ''
-}
-
-// upsert（PK=user_id）で保存する。初期行が無い既存ユーザーでも、insert/update の
-// RLS ポリシー内で行を作れる。長さ・空のガードは呼び出し側と DB の CHECK が持つ。
-export async function updateDisplayName(name) {
-  const sb = await getClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) throw new Error('ログインが必要です。')
-  const { data, error } = await sb
-    .from('profiles').upsert({ user_id: user.id, display_name: name }).select('display_name').single()
-  if (error) {
-    console.warn('[auth] 表示名の保存に失敗しました。', error)
-    throw new Error('表示名を保存できませんでした。時間をおいて再度お試しください。')
-  }
-  return data.display_name
-}
