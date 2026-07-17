@@ -12,7 +12,7 @@ async function onLogin() {
   try {
     await signInWithGoogle()
   } catch (e) {
-    clearStash()   // 遷移しなかったので、退避したスナップショットは捨てる
+    clearStash() // 遷移しなかったので、退避したスナップショットは捨てる
     showAlert(`ログインを開始できませんでした: ${e.message || e}`)
   }
 }
@@ -35,6 +35,8 @@ async function onSave(asNew = false) {
 
     <div class="hgrp hgrp-actions">
       <BaseButton variant="teal" class="mobile-only" title="パネルを開く" @click="ui.panelOpen = true">☰ パネル</BaseButton>
+      <!-- ギャラリーは公開閲覧（ログイン不要）なので認証テンプレートの外に出す。Supabase 未設定時は開けないので隠す -->
+      <BaseButton v-if="isAuthAvailable" variant="teal" tag="router-link" to="/gallery">▤ ギャラリー</BaseButton>
       <BaseButton variant="teal" @click="ui.lessonPageOpen = true">▦ レッスン</BaseButton>
       <BaseButton variant="teal" @click="ui.guidePageOpen = true">? ガイド</BaseButton>
 

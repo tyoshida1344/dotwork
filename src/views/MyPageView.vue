@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { signOut } from '~/core/auth.js'
 import { fetchDisplayName, updateDisplayName } from '~/core/profileApi.js'
-import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '~/core/worksApi.js'
+import { fetchWorks, createWork, deleteWork, renameWork, setWorkPublic, WORK_LIMIT } from '~/core/worksApi.js'
 import { worksState, openWork } from '~/core/works.js'
 import { exportPixelsPNG } from '~/core/export.js'
 import { EXPORT_SCALES } from '~/core/ui.js'
@@ -174,6 +174,21 @@ function onExport(w) {
   exportPixelsPNG(w.pixels, w.cols, w.rows, toFilename(w.title), exportScale.value)
 }
 
+// 公開/非公開を切り替える。公開は外向きの操作なので、公開にするときだけ確認する（解除は即時）。
+async function onTogglePublic(w) {
+  if (!w.isPublic && !await showConfirm(`「${w.title}」を公開しますか？ほかのユーザーがギャラリーで見られるようになります。`)) return
+  busyId.value = w.id
+  try {
+    const saved = await setWorkPublic(w.id, !w.isPublic)
+    w.isPublic = saved.isPublic
+    w.updatedAt = saved.updatedAt
+  } catch (e) {
+    showAlert(e.message || e)
+  } finally {
+    busyId.value = null
+  }
+}
+
 async function onDelete(w) {
   if (!await showConfirm(`「${w.title}」を削除しますか？この操作は取り消せません。`)) return
   busyId.value = w.id
@@ -253,6 +268,7 @@ async function onLogout() {
         <div v-else class="mp-grid">
           <article v-for="w in works" :key="w.id" class="work-card">
             <div class="work-thumb">
+              <span v-if="w.isPublic" class="work-public-badge">公開中</span>
               <WorkThumb :pixels="w.pixels" :cols="w.cols" :rows="w.rows" />
             </div>
             <div class="work-body">
@@ -278,6 +294,8 @@ async function onLogout() {
                   >⋯</BaseButton>
 
                   <div v-if="openMenuId === w.id" class="work-menu-list" role="menu" @click.stop>
+                    <button role="menuitem" @click="pick(onTogglePublic, w)">{{ w.isPublic ? '非公開にする' : '公開する' }}</button>
+                    <div class="work-menu-sep"></div>
                     <button role="menuitem" @click="pick(onRename, w)">名前を変更</button>
                     <button
                       role="menuitem"
@@ -333,7 +351,9 @@ async function onLogout() {
 .mp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 /* ⋯ メニューをカード外へはみ出させるため overflow は切らない。角丸はサムネイル側で受け持つ。 */
 .work-card { display: flex; flex-direction: column; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
-.work-thumb { background: var(--checker) 0 / 16px 16px; padding: 16px; border-radius: 7px 7px 0 0; }
+.work-thumb { position: relative; background: var(--checker) 0 / 16px 16px; padding: 16px; border-radius: 7px 7px 0 0; }
+/* 公開中の作品はサムネイル右上にバッジを出す */
+.work-public-badge { position: absolute; top: 6px; right: 6px; font-size: 11px; color: var(--on-accent); background: var(--teal); padding: 1px 7px; border-radius: 3px; }
 .work-body { padding: 12px 13px 13px; display: flex; flex-direction: column; flex: 1; }
 .work-title { font-size: 15px; color: var(--text); word-break: break-word; }
 .work-meta { font-size: 12px; color: var(--muted); margin-top: 5px; }
