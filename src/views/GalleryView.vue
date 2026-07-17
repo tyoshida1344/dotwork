@@ -26,14 +26,13 @@ const sizeFilter = ref('')   // キャンバス一辺（'' = すべて）
 // 上限まで取れたら、それより古い公開作品は一覧に出ていない旨を知らせる
 const capped = computed(() => works.value.length >= GALLERY_LIMIT)
 
-// レッスン絞り込みの選択肢は、公開作品に実際に紐づくレッスンだけ出す
+// レッスン絞り込みの選択肢はレッスンテーブル（公開レッスン）から作る。
+// 公開作品が増えても一覧を走査しないよう、取得済みの作品からは作らない。
 const lessonOptions = computed(() =>
-  [...new Set(works.value.map(w => w.lessonId).filter(id => id != null))]
-    .map(id => ({ id, title: lessonTitles.value.get(id) ?? `レッスン#${id}` })))
+  [...lessonTitles.value].map(([id, title]) => ({ id, title })))
 
-// サイズ絞り込みの選択肢も、実際に存在する一辺だけ出す（キャンバスは正方形）
-const sizeOptions = computed(() =>
-  [...new Set(works.value.map(w => w.cols))].sort((a, b) => a - b))
+// サイズ絞り込みは固定候補（TheStatusBar / LessonForm の SIZE セレクトと一致させる）。
+const SIZES = [16, 24, 32, 48]
 
 const filtered = computed(() => {
   const kw = keyword.value.trim().toLowerCase()
@@ -101,7 +100,7 @@ async function useAsReference(w) {
           </select>
           <select v-model="sizeFilter" aria-label="サイズで絞り込み">
             <option value="">すべてのサイズ</option>
-            <option v-for="s in sizeOptions" :key="s" :value="s">{{ s }}×{{ s }}</option>
+            <option v-for="s in SIZES" :key="s" :value="s">{{ s }}×{{ s }}</option>
           </select>
         </div>
 
