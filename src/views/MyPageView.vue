@@ -267,7 +267,7 @@ async function onLogout() {
           </span>
         </div>
         <div class="mp-head-actions">
-          <BaseButton tag="router-link" to="/terms" variant="subtle">利用規約</BaseButton>
+          <BaseButton tag="router-link" to="/terms">利用規約</BaseButton>
           <BaseButton tag="router-link" to="/">← エディタへ戻る</BaseButton>
           <BaseButton @click="onLogout">ログアウト</BaseButton>
         </div>
