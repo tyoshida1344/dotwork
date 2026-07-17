@@ -10,10 +10,10 @@ import { clearHistory } from '~/core/history.js'
 const configured = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 // 表示用のレッスン一覧。ensureLessons() / loadLessons() で読み込む。
-// リアクティブ配列なので、読み込み完了時に LessonPage の v-for が自動更新される。
+// リアクティブ配列なので、読み込み完了時に LessonsView の v-for が自動更新される。
 export const LESSONS = reactive([])
 
-let loaded = false   // 読み込み済みか（ensureLessons の重複取得を防ぐ）
+let loaded = false // 読み込み済みか（ensureLessons の重複取得を防ぐ）
 
 // レッスン一覧を Supabase から読み込む（未設定・取得失敗時は空）。
 export async function loadLessons() {
@@ -46,7 +46,7 @@ export function invalidateLessons() {
 
 // レッスンモードの状態。アンドゥ履歴・PNG 書き出しには含めない揮発性状態。
 export const lessonState = reactive({
-  active: null,        // 進行中のレッスン定義 | null
+  active: null, // 進行中のレッスン定義 | null
 })
 
 // レッスンを開始する。現在の描画をクリアし、サイズ・パレットをレッスンに固定する。
@@ -59,7 +59,6 @@ export function startLesson(lesson) {
   // レッスンを始めた直後にすぐ塗り始められるよう、色セットの先頭の色を選択状態にする
   S.color = lesson.palette[0]
   ui.palKey = 'lesson'
-  ui.lessonPageOpen = false
 
   // お題オーバーレイは既定オフで始める。前レッスンで重ねていたお題画像は片付ける
   // （手動で読み込んだ参照画像は残す）。
@@ -70,7 +69,7 @@ export function startLesson(lesson) {
 
 // レッスンを終了して通常モードへ戻る。描いた絵・サイズ・パレットはそのまま残す。
 export function exitLesson() {
-  if (ui.lessonOverlayOn) setLessonOverlay(false)   // お題の重ね表示は持ち越さない
+  if (ui.lessonOverlayOn) setLessonOverlay(false) // お題の重ね表示は持ち越さない
   lessonState.active = null
 }
 
@@ -79,7 +78,7 @@ export function exitLesson() {
 // REFERENCE パネルの既存スライダー（S.overlay）で共有調整する。
 export function setLessonOverlay(on) {
   if (on && lessonState.active) {
-    if (S.overlay <= 0) S.overlay = 0.3   // 全く見えない設定だったら既定の濃さに戻す
+    if (S.overlay <= 0) S.overlay = 0.3 // 全く見えない設定だったら既定の濃さに戻す
     const lesson = lessonState.active
     ui.lessonOverlayLoading = true
     const img = new Image()
