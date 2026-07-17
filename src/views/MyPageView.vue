@@ -187,9 +187,13 @@ async function onTogglePublic(w) {
       showAlert(e.message || e)
       return
     }
+    // 長いタイトルで確認文が読みづらくならないよう、載せる作品名は詰める
+    const label = w.title.length > 20 ? `${w.title.slice(0, 20)}…` : w.title
     const msg = needConsent
-      ? `「${w.title}」を公開しますか？公開すると利用規約に同意したものとして扱われ、ほかのユーザーがギャラリーで見られるようになります。内容は画面上部の「利用規約」から確認できます（未読の場合はいったんキャンセルしてください）。`
-      : `「${w.title}」を公開しますか？ほかのユーザーがギャラリーで見られるようになります。`
+      ? `「${label}」を公開しますか？\n\n`
+        + '公開すると、ギャラリーでほかのユーザーが見られるようになります。\n\n'
+        + '公開をもって、利用規約（画面上部の「利用規約」）に同意したものとして扱われます。'
+      : `「${label}」を公開しますか？\n\n公開すると、ギャラリーでほかのユーザーが見られるようになります。`
     if (!await showConfirm(msg)) return
   }
   busyId.value = w.id
