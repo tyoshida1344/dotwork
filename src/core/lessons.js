@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { S } from '~/core/state.js'
 import { ui } from '~/core/ui.js'
-import { resize, drawPx } from '~/core/canvas.js'
+import { drawPx } from '~/core/canvas.js'
 import { clearHistory } from '~/core/history.js'
 
 // Supabase が設定されているか（env のみで判定）。
@@ -51,6 +51,8 @@ export const lessonState = reactive({
 
 // レッスンを開始する。現在の描画をクリアし、サイズ・パレットをレッスンに固定する。
 // 注意: ヘッダーの SIZE 変更（resetCanvas）と違い、レッスンのサイズは既定値として保存しない。
+// 描画はここでは呼ばない（レッスン画面から呼ぶ時点ではキャンバスが未マウントのため）。
+// 再描画は遷移先の TheCanvas.onMounted に任せる（applySnapshot と同じ作法）。
 export function startLesson(lesson) {
   S.cols = S.rows = lesson.size
   S.pixels = new Array(lesson.size * lesson.size).fill(null)
@@ -64,7 +66,6 @@ export function startLesson(lesson) {
   // （手動で読み込んだ参照画像は残す）。
   if (ui.lessonOverlayOn) { S.refImg = null; ui.lessonOverlayOn = false }
   lessonState.active = lesson
-  resize()
 }
 
 // レッスンを終了して通常モードへ戻る。描いた絵・サイズ・パレットはそのまま残す。
