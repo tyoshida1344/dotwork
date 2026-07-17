@@ -18,7 +18,7 @@ watch(() => ui.lessonPageOpen, async open => {
 })
 
 async function onStart(lesson) {
-  // 開始すると現在の描画は消えるため確認する（ヘッダーのリサイズと同様の作法）
+  // 開始すると現在の描画は消えるため確認する（サイズ変更と同様の作法）
   if (!await showConfirm(`「${lesson.title}」を始めますか？現在の描画は消去されます。`)) return
   startLesson(lesson)
 }
