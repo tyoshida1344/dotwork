@@ -1,11 +1,11 @@
 import { supabase } from '~/core/supabase.js'
 
-// 学習者の表示名（profiles）の読み書き。
+// ユーザーの表示名（profiles テーブル）の取得と保存。
 // works と同じく anon クライアント＋ログイン中のセッションで直接行い、「本人の行だけ書ける」ことは RLS（auth.uid() = user_id）が保証する。
-//
 // Google の名前・メールは画面に出さず、本人が決めた表示名だけを扱う。
 // 他人の表示名も読めるよう読み取りは全員可、書き込みは本人のみ。
 // 初期行はサインアップ時に DB トリガーが既定名で作るので、通常はどのユーザーにも1行ある。
+
 const TABLE = 'profiles'
 
 function assertClient() {
@@ -18,7 +18,7 @@ function toClientError(error, where) {
   return new Error('処理に失敗しました。時間をおいて再度お試しください。')
 }
 
-// ログイン中のユーザーの表示名を読む。
+// ログイン中のユーザーの表示名を取得する。
 // 行が無ければ空文字を返す。
 export async function fetchDisplayName() {
   assertClient()

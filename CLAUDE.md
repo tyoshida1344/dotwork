@@ -26,7 +26,7 @@ src/
   style.css                      ← グローバル CSS（CSS 変数・リセット・z-index/チェッカー・複数画面で共有するクラスのみ。部品固有・#layout・ガイド本文は各 .vue の <style scoped>）
   core/        ← 状態とロジック（Vanilla JS）: state / palette / canvas / tools / history / export / ui
                  ＋ レッスン管理まわり: lessons / supabase / lessonsApi
-                 ＋ 学習者アカウントと作品: auth / works / worksApi
+                 ＋ 学習者アカウント・表示名・作品: auth / profileApi / works / worksApi
                  ＋ 共通ダイアログ: dialog（ネイティブ alert/confirm/prompt の置き換え。Promise を返す）
   views/       ← pages 層（ルートコンポーネント）: EditorView（エディタ本体）/ MyPageView（/mypage: 保存した作品の一覧）
                  ＋ AdminView（/admin のシェル: 認証＋ヘッダー）/ AdminHome（管理トップのメニュー）/ LessonAdmin（レッスン管理）
@@ -81,13 +81,15 @@ UI 部品は **atomic デザイン**で階層化する。層は `components/{ato
 
 総当たり対策として、`admin_login` は **IP 単位のログイン失敗スロットリング**を行う（`admin_login_attempts` テーブルに IP ごとの失敗回数を記録し、指数バックオフ＝再試行間隔を `2^(失敗回数-1)` 秒に広げ、5回失敗で1時間ロック。成功でクリア）。IP は Edge Function が `x-forwarded-for` から取り出して RPC に渡す。戻り値は `jsonb`（`{status: ok|invalid|locked, token?, retry_after?}`）で、`locked` は関数が `429 + Retry-After` に変換する。CORS は `*` を使わず、環境変数 `ALLOWED_ORIGINS`（カンマ区切り・未設定時はローカル開発オリジンのみ）に載る Origin だけをエコーする。
 
-### 学習者アカウントと作品（auth.js / works.js / worksApi.js）
+### 学習者アカウント・表示名・作品（auth.js / profileApi.js / works.js / worksApi.js）
 
 学習者は **Supabase Auth の Google OAuth** でログインする（管理者の独自トークン認証とは別系統）。作品は本人しか読み書きしないため、レッスンと違い **Edge Function を通さず、`auth.uid()` ベースの RLS でクライアントから直接** `works` テーブルを読み書きする。
 
 `auth.js` はログイン状態（`authState.ready` / `authState.user`）と Google サインイン／アウトを持つ。`lessons.js` と同じく `supabase.js` を**動的 import** し、さらに **ログインの形跡が無いうちは読み込まない**（`localStorage` の `sb-*-auth-token` の有無と、OAuth から戻った URL かどうかで判定する）。未ログインの利用者に `@supabase/supabase-js` のチャンクを取らせないため。`authState.ready` になるまでヘッダーはログイン導線を出さない（表示のちらつき防止）。
 
 OAuth はリダイレクトでページごと捨てるため、`ログイン` を押す前に `works.js` の `stashEditor()` で編集中のキャンバスを `sessionStorage` へ退避し、戻ってきた `EditorView` の `onMounted` が `restoreStashedEditor()` で復元する。
+
+表示名（ニックネーム）は `profiles` テーブルで管理し、`profileApi.js` が本人のセッションで直接読み書きする（`works` と同じく RLS `auth.uid() = user_id`。**読み取りは全員可**〈他人の表示名も見せられるように〉・**書き込みは本人のみ**）。Google の名前・メールは画面に出さない。**初回サインアップ時に `auth.users` の insert トリガーが既定の表示名を自動付与する**：形式は「`ユーザー` ＋ 4桁ゼロ埋め乱数」（`ユーザー0000`〜`ユーザー9999`）、重複は許す（一意制約なし）、長さは **1〜20 文字**（DB の `CHECK` とクライアントの `maxlength` を一致させる）。トリガーは新規 insert にしか効かないため、テーブル導入時点の既存ユーザーには**バックフィルの DML** で同じ既定名を補う。変更はマイページのヘッダーでインライン編集する。
 
 `works.js` はエディタと作品の橋渡し（`supabase` を静的 import しない）。`snapshotEditor()` / `applySnapshot()` が「保存する状態」の唯一の定義で、保存・OAuth 退避・作品を開く の全てがこれを通る。保存対象は**ピクセル・サイズ・パレット・補助線・レッスン紐づけ**のみ（背景色・選択色・参照画像・ズーム・アンドゥ履歴は含めない）。`applySnapshot()` は描画を呼ばない（マイページから開く時点ではキャンバスが未マウントのため。再描画は呼び出し元 or `TheCanvas` の `onMounted`）。レッスンに紐づく作品を開くとレッスンモードごと復元し、そのレッスンが非公開になっていたら通常モードで開く。
 
