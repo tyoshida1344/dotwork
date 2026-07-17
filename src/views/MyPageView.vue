@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { signOut } from '~/core/auth.js'
+import { fetchDisplayName, updateDisplayName } from '~/core/profileApi.js'
 import { fetchWorks, createWork, deleteWork, renameWork, WORK_LIMIT } from '~/core/worksApi.js'
 import { worksState, openWork } from '~/core/works.js'
 import { exportPixelsPNG } from '~/core/export.js'
@@ -15,12 +16,21 @@ import BaseButton from '~/components/atoms/BaseButton.vue'
 const router = useRouter()
 
 const works = ref([])
-const lessonTitles = ref(new Map())   // lesson id → タイトル（作品に紐づくレッスン名の表示用）
+const lessonTitles = ref(new Map()) // lesson id → タイトル（作品に紐づくレッスン名の表示用）
 const loading = ref(true)
 const error = ref('')
-const busyId = ref(null)              // 操作中の作品 id（そのカードのボタンだけ止める）
-const openMenuId = ref(null)          // ⋯ メニューを開いている作品 id（同時に開くのは1つ）
-const exportScale = ref(1)            // 書き出し倍率（マイページ内で共有・エディタとは別・保持しない）
+const busyId = ref(null) // 操作中の作品 id（そのカードのボタンだけ止める）
+const openMenuId = ref(null) // ⋯ メニューを開いている作品 id（同時に開くのは1つ）
+const exportScale = ref(1) // 書き出し倍率（マイページ内で共有・エディタとは別・保持しない）
+
+// 表示名（ニックネーム）。ヘッダーでクリックするとインライン編集になる。
+const NAME_MAX = 20
+const displayName = ref('') // 保存済みの表示名（空なら未取得＝名前を出さない）
+const editingName = ref(false) // 入力欄を出しているか
+const nameInput = ref('') // 編集中の入力値
+const nameError = ref('') // 空欄などのガード文言
+const savingName = ref(false) // 保存中（二重確定を防ぐ）
+const nameInputEl = ref(null) // 入力欄への参照（開いたらフォーカスする）
 
 const full = computed(() => works.value.length >= WORK_LIMIT)
 
@@ -37,9 +47,51 @@ function pick(action, w) {
   action(w)
 }
 
+// 表示名は取れなくても作品一覧は出す（ヘッダーの名前が出ないだけ）ので、works とは独立に読む
+async function loadDisplayName() {
+  try {
+    displayName.value = await fetchDisplayName()
+  } catch (e) {
+    console.warn(e)
+  }
+}
+
+// クリックで編集開始。現在の名前を入力欄に入れ、フォーカスして全選択する。
+function startEditName() {
+  nameInput.value = displayName.value
+  nameError.value = ''
+  editingName.value = true
+  nextTick(() => nameInputEl.value?.select())
+}
+
+function cancelEditName() {
+  editingName.value = false
+  nameError.value = ''
+}
+
+// 保存ボタン（または Enter）で確定する。空欄なら文言を出して編集を続けさせる。変更が無ければ黙って閉じる。
+async function confirmEditName() {
+  if (savingName.value) return
+  const name = nameInput.value.trim()
+  if (!name) { nameError.value = '表示名を入力してください。'; return }
+  if (name === displayName.value) { cancelEditName(); return }
+
+  savingName.value = true
+  try {
+    displayName.value = await updateDisplayName(name)
+    editingName.value = false
+    nameError.value = ''
+  } catch (e) {
+    showAlert(e.message || e)
+  } finally {
+    savingName.value = false
+  }
+}
+
 onMounted(async () => {
   document.addEventListener('click', onDocClick)
   document.addEventListener('keydown', onDocKeydown)
+  loadDisplayName()
   try {
     works.value = await fetchWorks()
     // レッスン名は表示のためだけなので、取得に失敗しても一覧は出す
@@ -154,6 +206,30 @@ async function onLogout() {
       <header class="mp-head">
         <div class="mp-head-main">
           <span class="mp-logo">MY PAGE</span>
+
+          <button
+            v-if="displayName && !editingName"
+            class="mp-name"
+            title="表示名を変更"
+            @click="startEditName"
+          >{{ displayName }}<span class="mp-name-pen" aria-hidden="true">✎</span></button>
+
+          <span v-else-if="editingName" class="mp-name-edit">
+            <input
+              ref="nameInputEl"
+              v-model="nameInput"
+              class="mp-name-input"
+              type="text"
+              :maxlength="NAME_MAX"
+              aria-label="表示名"
+              :disabled="savingName"
+              @keydown.enter.prevent="confirmEditName"
+              @keydown.esc.prevent="cancelEditName"
+            >
+            <BaseButton compact variant="accent" :loading="savingName" loading-text="保存中…" @click="confirmEditName">保存</BaseButton>
+            <BaseButton compact :disabled="savingName" @click="cancelEditName">キャンセル</BaseButton>
+            <span v-if="nameError" class="mp-name-error">{{ nameError }}</span>
+          </span>
         </div>
         <div class="mp-head-actions">
           <BaseButton tag="router-link" to="/">← エディタへ戻る</BaseButton>
@@ -236,8 +312,18 @@ async function onLogout() {
 #mypage { position: fixed; inset: 0; background: var(--bg); overflow-y: auto; color: var(--text); }
 .mp-inner { max-width: 920px; margin: 0 auto; padding: 28px 22px 60px; }
 .mp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.mp-head-main { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .mp-logo { font-family: 'Silkscreen', monospace; color: var(--amber); font-size: 20px; letter-spacing: 1px; }
 .mp-head-actions { display: flex; gap: 8px; align-items: center; }
+
+/* 表示名（クリックでインライン編集） */
+.mp-name { background: none; border: none; padding: 2px 4px; font-size: 15px; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; border-radius: 5px; }
+.mp-name:hover { color: var(--amber); text-decoration: underline; }
+.mp-name-pen { font-size: 12px; color: var(--muted); }
+.mp-name:hover .mp-name-pen { color: var(--amber); }
+.mp-name-edit { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mp-name-input { font-size: 15px; padding: 3px 7px; width: 12em; max-width: 60vw; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text); }
+.mp-name-error { font-size: 12px; color: #dc2626; }
 
 .mp-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .mp-count { font-size: 13px; color: var(--muted); }
