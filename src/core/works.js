@@ -80,6 +80,34 @@ export async function openWork(work) {
   worksState.currentTitle = work.title
 }
 
+// 公開ギャラリーの作品を「お手本」として今のキャンバスに参照画像で重ねる。
+// ピクセルから画像を作って S.refImg に載せるだけで、REFERENCE パネルで手動読み込みしたのと同じ状態にする。
+// 描画は呼ばない（ギャラリー画面から呼ばれ、エディタのキャンバスはまだマウントされていないため）。
+// 呼び出し側はこの後エディタ（/）へ遷移し、TheCanvas の onMounted が overlay ごと描画する。
+export function applyReferenceFromPixels(pixels, cols, rows) {
+  return new Promise(resolve => {
+    const cv = document.createElement('canvas')
+    cv.width = cols
+    cv.height = rows
+    const x = cv.getContext('2d')
+    for (let i = 0; i < pixels.length; i++) {
+      const c = pixels[i]
+      if (!c) continue
+      x.fillStyle = c
+      x.fillRect(i % cols, Math.floor(i / cols), 1, 1)
+    }
+    const img = new Image()
+    img.onload = () => {
+      S.refImg = img
+      if (S.overlay <= 0) S.overlay = 0.5   // 全く見えない設定だったら見える濃さに戻す
+      ui.lessonOverlayOn = false            // 手動の参照画像扱い（お題オーバーレイではない）
+      resolve()
+    }
+    img.onerror = () => resolve()
+    img.src = cv.toDataURL()
+  })
+}
+
 // 「無題 1」「無題 2」… と重ならない名前を作る
 export function nextUntitledTitle(titles) {
   let max = 0

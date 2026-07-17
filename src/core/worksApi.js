@@ -21,6 +21,7 @@ function rowToWork(r) {
     headUnits: r.head_units,
     vDivUnits: r.v_div_units,
     lessonId: r.lesson_id,
+    isPublic: r.is_public,
     updatedAt: r.updated_at,
   }
 }
@@ -94,6 +95,16 @@ export async function renameWork(id, title) {
   const { data, error } = await supabase
     .from(TABLE).update({ title }).eq('id', id).select().single()
   if (error) throw toClientError(error, 'renameWork')
+  return rowToWork(data)
+}
+
+// 公開状態を切り替える。is_public だけを更新するので、エディタの上書き保存（updateWork）が
+// 公開状態を巻き戻すことはない（workToRow に is_public を含めないのはこのため）。
+export async function setWorkPublic(id, isPublic) {
+  assertClient()
+  const { data, error } = await supabase
+    .from(TABLE).update({ is_public: isPublic }).eq('id', id).select().single()
+  if (error) throw toClientError(error, 'setWorkPublic')
   return rowToWork(data)
 }
 
