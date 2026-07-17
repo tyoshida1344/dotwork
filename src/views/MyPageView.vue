@@ -64,19 +64,12 @@ function startEditName() {
   nextTick(() => nameInputEl.value?.select())
 }
 
-// フォーカスが外れたら破棄（保存しない）。保存処理中の blur は無視する。
-function onNameBlur() {
-  if (savingName.value) return
-  editingName.value = false
-  nameError.value = ''
-}
-
 function cancelEditName() {
   editingName.value = false
   nameError.value = ''
 }
 
-// Enter で確定。空欄なら文言を出して編集を続けさせる。変更が無ければ黙って閉じる。
+// 保存ボタン（または Enter）で確定する。空欄なら文言を出して編集を続けさせる。変更が無ければ黙って閉じる。
 async function confirmEditName() {
   if (savingName.value) return
   const name = nameInput.value.trim()
@@ -229,12 +222,13 @@ async function onLogout() {
               type="text"
               :maxlength="NAME_MAX"
               aria-label="表示名"
+              :disabled="savingName"
               @keydown.enter.prevent="confirmEditName"
               @keydown.esc.prevent="cancelEditName"
-              @blur="onNameBlur"
             >
+            <BaseButton compact variant="accent" :loading="savingName" loading-text="保存中…" @click="confirmEditName">保存</BaseButton>
+            <BaseButton compact :disabled="savingName" @click="cancelEditName">キャンセル</BaseButton>
             <span v-if="nameError" class="mp-name-error">{{ nameError }}</span>
-            <span v-else class="mp-name-hint">Enter=確定 / Esc=取消</span>
           </span>
         </div>
         <div class="mp-head-actions">
@@ -327,9 +321,8 @@ async function onLogout() {
 .mp-name:hover { color: var(--amber); text-decoration: underline; }
 .mp-name-pen { font-size: 12px; color: var(--muted); }
 .mp-name:hover .mp-name-pen { color: var(--amber); }
-.mp-name-edit { display: inline-flex; align-items: center; gap: 8px; }
+.mp-name-edit { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .mp-name-input { font-size: 15px; padding: 3px 7px; width: 12em; max-width: 60vw; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); color: var(--text); }
-.mp-name-hint { font-size: 12px; color: var(--muted); }
 .mp-name-error { font-size: 12px; color: #dc2626; }
 
 .mp-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
