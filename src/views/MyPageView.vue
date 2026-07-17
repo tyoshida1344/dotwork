@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { signOut } from '~/core/auth.js'
 import { fetchDisplayName, updateDisplayName } from '~/core/profileApi.js'
 import { fetchWorks, createWork, deleteWork, renameWork, setWorkPublic, WORK_LIMIT } from '~/core/worksApi.js'
+import { hasAgreed, recordConsent, CONSENT_DOCS } from '~/core/consentApi.js'
+import { TERMS_VERSION } from '~/core/terms.js'
 import { worksState, openWork } from '~/core/works.js'
 import { exportPixelsPNG } from '~/core/export.js'
 import { EXPORT_SCALES } from '~/core/ui.js'
@@ -175,10 +177,24 @@ function onExport(w) {
 }
 
 // 公開/非公開を切り替える。公開は外向きの操作なので、公開にするときだけ確認する（解除は即時）。
+// 初めて公開するとき（現在の規約にまだ同意していないとき）は、確認を利用規約への同意として扱い記録する。
 async function onTogglePublic(w) {
-  if (!w.isPublic && !await showConfirm(`「${w.title}」を公開しますか？ほかのユーザーがギャラリーで見られるようになります。`)) return
+  let needConsent = false
+  if (!w.isPublic) {
+    try {
+      needConsent = !await hasAgreed(CONSENT_DOCS.TERMS, TERMS_VERSION)
+    } catch (e) {
+      showAlert(e.message || e)
+      return
+    }
+    const msg = needConsent
+      ? `「${w.title}」を公開しますか？公開すると利用規約に同意したものとして扱われ、ほかのユーザーがギャラリーで見られるようになります。規約はこの画面上部の「利用規約」から確認できます。`
+      : `「${w.title}」を公開しますか？ほかのユーザーがギャラリーで見られるようになります。`
+    if (!await showConfirm(msg)) return
+  }
   busyId.value = w.id
   try {
+    if (needConsent) await recordConsent(CONSENT_DOCS.TERMS, TERMS_VERSION)
     const saved = await setWorkPublic(w.id, !w.isPublic)
     w.isPublic = saved.isPublic
     w.updatedAt = saved.updatedAt
@@ -247,6 +263,7 @@ async function onLogout() {
           </span>
         </div>
         <div class="mp-head-actions">
+          <BaseButton tag="router-link" to="/terms" variant="subtle">利用規約</BaseButton>
           <BaseButton tag="router-link" to="/">← エディタへ戻る</BaseButton>
           <BaseButton @click="onLogout">ログアウト</BaseButton>
         </div>
