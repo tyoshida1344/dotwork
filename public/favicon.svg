@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <title>DOTWORK</title>
+  <!-- ヘッダロゴ「DOTWORK」の Silkscreen 風「D」をピクセルで再現（アンバー #e08a1e） -->
+  <!-- 縦長（5×6）にして左の縦棒を強調し、O との見間違いを避ける。上下左右の余白を均等にして中央ぞろえ -->
+  <g fill="#e08a1e">
+    <rect x="3" y="2" width="8" height="2"/>
+    <rect x="3" y="2" width="2" height="12"/>
+    <rect x="11" y="4" width="2" height="8"/>
+    <rect x="3" y="12" width="8" height="2"/>
+  </g>
+</svg>
