@@ -1,0 +1,29 @@
+name: Supabase Keep-Alive
+
+# 無料プランは約7日間アクセスが無いとプロジェクトが自動で一時停止し、DB が使えなくなる。
+# 週2回（月・木）に anon キーで軽い読み取りを1回投げ、プロジェクトを「起きたまま」に保つ。
+on:
+  schedule:
+    - cron: "0 0 * * 1,4" # 毎週 月・木 の 00:00 UTC（3〜4日おき）
+  workflow_dispatch: # 手動実行（動作確認用）
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      # PostgREST に軽い SELECT を投げると実際に DB クエリが走り、一時停止までの猶予がリセットされる。
+      # 起こし続けたいのは本番プロジェクトなので、プレビューが使う _DEV と分けて _PROD の Secrets を使う。
+      - name: Ping Supabase REST
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_PROD }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
+        run: |
+          curl --fail --silent --show-error \
+            "${SUPABASE_URL}/rest/v1/lessons?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -o /dev/null
+          echo "Supabase ping OK"
