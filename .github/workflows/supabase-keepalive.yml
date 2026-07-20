@@ -15,12 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # PostgREST に軽い SELECT を投げると実際に DB クエリが走り、一時停止までの猶予がリセットされる。
-      # 起こし続けたいのは本番プロジェクトなので、プレビュー用（dev）の VITE_SUPABASE_* とは分け、
-      # 本番専用の Secrets（SUPABASE_PROD_URL / SUPABASE_PROD_ANON_KEY）を使う。
+      # 起こし続けたいのは本番プロジェクトなので、プレビューが使う _DEV と分けて _PROD の Secrets を使う。
       - name: Ping Supabase REST
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_PROD_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_PROD }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
         run: |
           curl --fail --silent --show-error \
             "${SUPABASE_URL}/rest/v1/lessons?select=id&limit=1" \

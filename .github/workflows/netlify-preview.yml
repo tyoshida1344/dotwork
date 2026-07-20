@@ -31,10 +31,11 @@ jobs:
       - run: npm ci
 
       # VITE_* はビルド時に埋め込まれる。未注入だと Supabase 連携がツリーシェイクで外れるため必ず渡す。
+      # プレビューは dev プロジェクトへ向けるため _DEV の Secrets を使う（env 変数名は Vite が読む名前のまま）。
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_DEV }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_DEV }}
         run: npm run build
 
       # netlify-cli（devDependency）で prebuilt な dist を alias デプロイ。URL は PR 番号で固定。
